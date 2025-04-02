@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,11 +22,12 @@ const QuizCard: React.FC = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
 
-  // Only reset the user input state when the card changes, not the showAnswer state
+  // Reset user input AND showAnswer state when the card changes
   useEffect(() => {
     if (currentCard) {
       setUserAnswer("");
       setAttemptedRetry(false);
+      setShowAnswer(false);
     }
   }, [currentCard?.id]);
 

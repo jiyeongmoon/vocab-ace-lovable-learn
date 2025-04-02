@@ -71,6 +71,8 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       setCurrentCardIndex(0);
     }
+    
+    setQuizResult(null);
   };
 
   const checkAnswer = (userAnswer: string): QuizResult => {
