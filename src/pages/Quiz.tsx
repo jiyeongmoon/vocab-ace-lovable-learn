@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { VocabProvider } from "@/contexts/VocabContext";
 import QuizCard from "@/components/QuizCard";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,8 @@ import { ArrowLeft, BarChart3 } from "lucide-react";
 
 const Quiz = () => {
   const navigate = useNavigate();
+  const [correct, setCorrect] = useState(0);
+  const [total, setTotal] = useState(0);
 
   return (
     <VocabProvider>
@@ -43,11 +45,11 @@ const Quiz = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="border rounded-md p-3">
                       <div className="text-sm text-muted-foreground">Session Correct</div>
-                      <div className="text-xl font-bold">0</div>
+                      <div className="text-xl font-bold">{correct}</div>
                     </div>
                     <div className="border rounded-md p-3">
                       <div className="text-sm text-muted-foreground">Session Total</div>
-                      <div className="text-xl font-bold">0</div>
+                      <div className="text-xl font-bold">{total}</div>
                     </div>
                   </div>
                 </div>
@@ -56,6 +58,7 @@ const Quiz = () => {
               <div className="bg-white p-6 rounded-lg border shadow-sm">
                 <h3 className="text-lg font-semibold mb-3">Quiz Tips</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• If English - type Korean Meaning</li>
                   <li>• Review words regularly to reinforce learning</li>
                   <li>• Use the example sentences to understand context</li>
                   <li>• Press Enter to quickly move to the next word</li>

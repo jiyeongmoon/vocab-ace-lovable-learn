@@ -28,7 +28,7 @@ const QuizCard: React.FC = () => {
     setAttemptedRetry(false);
   }, [currentCard?.id]);
 
-  // Add useEffect to set showAnswer when quizResult changes
+  // Set showAnswer when quizResult changes
   useEffect(() => {
     if (quizResult) {
       setShowAnswer(true);
@@ -72,7 +72,6 @@ const QuizCard: React.FC = () => {
     
     // Use the context's checkAnswer function
     checkAnswer(userAnswer);
-    // Note: We don't need to set showAnswer here anymore as the useEffect will handle it
   };
 
   const handleNext = () => {
@@ -111,13 +110,6 @@ const QuizCard: React.FC = () => {
   const getAllMeanings = () => {
     return currentCard.meaning.split(',').map(meaning => meaning.trim());
   };
-
-  // Add debug console logging to troubleshoot
-  console.log("QuizCard render state:", { 
-    showAnswer, 
-    quizResult,
-    currentCard: currentCard?.id
-  });
 
   return (
     <Card className="w-full">
@@ -172,9 +164,6 @@ const QuizCard: React.FC = () => {
             </Button>
           )}
         </form>
-        
-        {/* Debug line to show current result */}
-        <p className="text-xs text-gray-500">Debug: showAnswer={String(showAnswer)}, quizResult={quizResult}</p>
         
         {showAnswer && quizResult && (
           <div className={`p-4 rounded-md ${quizResult === "Correct" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
