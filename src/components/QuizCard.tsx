@@ -21,12 +21,7 @@ const QuizCard: React.FC = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
 
-  // Reset UI state only when the card ID changes
-  useEffect(() => {
-    setShowAnswer(false);
-  }, [currentCard?.id]);
-
-  // Additional effect to reset other UI state when card changes
+  // Only reset the user input state when the card changes, not the showAnswer state
   useEffect(() => {
     if (currentCard) {
       setUserAnswer("");
