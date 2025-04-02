@@ -11,7 +11,6 @@ import { QuizResult } from "@/types/vocab";
 const QuizCard: React.FC = () => {
   const { 
     currentCard, 
-    quizResult: contextQuizResult, 
     nextCard, 
     resetUserAnswer, 
     updateCard,
