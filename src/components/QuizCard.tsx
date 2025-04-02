@@ -28,6 +28,20 @@ const QuizCard: React.FC = () => {
     setAttemptedRetry(false);
   }, [currentCard?.id]);
 
+  // Handle keydown for Enter key to move to next word
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && showAnswer) {
+        handleNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showAnswer]);
+
   if (!currentCard) {
     return (
       <Card className="w-full h-64 flex items-center justify-center">
