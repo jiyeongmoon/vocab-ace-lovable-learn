@@ -6,12 +6,12 @@ import { useVocab } from "@/contexts/VocabContext";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, XCircle, BookOpen, ArrowRight, Search, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { QuizResult } from "@/types/vocab";
 
 const QuizCard: React.FC = () => {
   const { 
     currentCard, 
-    checkAnswer, 
-    quizResult, 
+    quizResult: contextQuizResult, 
     nextCard, 
     resetUserAnswer, 
     updateCard,
@@ -21,11 +21,13 @@ const QuizCard: React.FC = () => {
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
+  const [localQuizResult, setLocalQuizResult] = useState<QuizResult>(null);
 
   useEffect(() => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(false);
+    setLocalQuizResult(null);
   }, [currentCard?.id]);
 
   // Handle keydown for Enter key to move to next word
@@ -55,13 +57,45 @@ const QuizCard: React.FC = () => {
     );
   }
 
+  // Local function to check the answer
+  const checkAnswerLocally = (answer: string): QuizResult => {
+    if (!currentCard) return null;
+    
+    // Normalize the user answer and correct meanings
+    const normalizedUserAnswer = answer.trim().toLowerCase();
+    const correctMeanings = currentCard.meaning
+      .split(',')
+      .map(meaning => meaning.trim().toLowerCase());
+    
+    // Check if user answer matches any of the correct meanings
+    const isCorrect = correctMeanings.includes(normalizedUserAnswer);
+    const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
+    
+    // If correct, update the card's correct count and possibly mark as completed
+    if (isCorrect) {
+      const newCorrectCount = currentCard.correctCount + 1;
+      const completed = newCorrectCount >= 10;
+      
+      updateCard(currentCard.id, { 
+        correctCount: newCorrectCount,
+        completed
+      });
+    }
+    
+    return result;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!userAnswer.trim()) return;
     
+    // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
-    checkAnswer(userAnswer);
+    
+    // Check the answer locally
+    const result = checkAnswerLocally(userAnswer);
+    setLocalQuizResult(result);
     setShowAnswer(true);
   };
 
@@ -70,6 +104,7 @@ const QuizCard: React.FC = () => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(false);
+    setLocalQuizResult(null);
     nextCard();
   };
 
@@ -77,6 +112,7 @@ const QuizCard: React.FC = () => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(true);
+    setLocalQuizResult(null);
   };
 
   const openDictionary = () => {
@@ -101,6 +137,9 @@ const QuizCard: React.FC = () => {
   const getAllMeanings = () => {
     return currentCard.meaning.split(',').map(meaning => meaning.trim());
   };
+
+  // Use local quiz result state for rendering
+  const quizResult = localQuizResult;
 
   return (
     <Card className="w-full">
