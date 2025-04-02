@@ -92,6 +92,11 @@ const QuizCard: React.FC = () => {
     ? formatExampleSentence(currentCard.exampleSentence, currentCard.word)
     : "";
 
+  // Get all the possible correct meanings as an array
+  const getAllMeanings = () => {
+    return currentCard.meaning.split(',').map(meaning => meaning.trim());
+  };
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -111,7 +116,7 @@ const QuizCard: React.FC = () => {
           <div className="text-3xl font-bold mb-2">{currentCard.word}</div>
           
           {currentCard.exampleSentence && (
-            <div className="text-sm text-gray-600 mb-3 prose prose-sm max-w-none">
+            <div className="text-lg sm:text-xl text-gray-600 mb-3 prose prose-sm max-w-none">
               <span dangerouslySetInnerHTML={{ 
                 __html: formattedSentence.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
               }} />
@@ -160,7 +165,7 @@ const QuizCard: React.FC = () => {
                   {quizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
                 </p>
                 <p className="text-sm">
-                  <span className="font-medium">Correct meaning:</span> {currentCard.meaning}
+                  <span className="font-medium">Correct meanings:</span> {currentCard.meaning}
                 </p>
                 
                 {currentCard.exampleSentence && (
