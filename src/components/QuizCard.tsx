@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,10 +21,13 @@ const QuizCard: React.FC = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
 
+  // Reset UI state only when the card ID changes
   useEffect(() => {
-    setUserAnswer("");
-    setShowAnswer(false);
-    setAttemptedRetry(false);
+    if (currentCard) {
+      setUserAnswer("");
+      setShowAnswer(false);
+      setAttemptedRetry(false);
+    }
   }, [currentCard?.id]);
 
   // Set showAnswer when quizResult changes
@@ -75,10 +77,6 @@ const QuizCard: React.FC = () => {
   };
 
   const handleNext = () => {
-    resetUserAnswer();
-    setUserAnswer("");
-    setShowAnswer(false);
-    setAttemptedRetry(false);
     nextCard();
   };
 

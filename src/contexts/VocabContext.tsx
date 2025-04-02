@@ -59,8 +59,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetUserAnswer = () => {
-    // Always explicitly reset quizResult to null
-    setQuizResult(null);
+    // Removed setQuizResult(null) from here as requested
     
     if (currentCard) {
       updateCard(currentCard.id, { userAnswer: "" });
@@ -75,6 +74,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       setCurrentCardIndex(0);
     }
+    
+    // Now set quizResult to null AFTER changing the card
+    setQuizResult(null);
   };
 
   const checkAnswer = (userAnswer: string): QuizResult => {
@@ -120,7 +122,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentCard,
     nextCard,
     checkAnswer,
-    quizResult, // Confirmed: quizResult is included in the context value
+    quizResult,
     resetUserAnswer,
     generateExampleSentence: generateSentence,
     incompleteCards,
