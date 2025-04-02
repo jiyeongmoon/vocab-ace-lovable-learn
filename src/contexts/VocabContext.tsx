@@ -120,7 +120,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentCard,
     nextCard,
     checkAnswer,
-    quizResult,
+    quizResult, // Confirmed: quizResult is included in the context value
     resetUserAnswer,
     generateExampleSentence: generateSentence,
     incompleteCards,

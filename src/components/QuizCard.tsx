@@ -28,6 +28,13 @@ const QuizCard: React.FC = () => {
     setAttemptedRetry(false);
   }, [currentCard?.id]);
 
+  // Add useEffect to set showAnswer when quizResult changes
+  useEffect(() => {
+    if (quizResult) {
+      setShowAnswer(true);
+    }
+  }, [quizResult]);
+
   // Handle keydown for Enter key to move to next word
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -65,7 +72,7 @@ const QuizCard: React.FC = () => {
     
     // Use the context's checkAnswer function
     checkAnswer(userAnswer);
-    setShowAnswer(true);
+    // Note: We don't need to set showAnswer here anymore as the useEffect will handle it
   };
 
   const handleNext = () => {
