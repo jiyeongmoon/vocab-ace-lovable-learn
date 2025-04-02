@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
 import { VocabContextType } from "./types";
@@ -59,8 +58,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetUserAnswer = () => {
-    // Removed setQuizResult(null) from here as requested
-    
     if (currentCard) {
       updateCard(currentCard.id, { userAnswer: "" });
     }
@@ -74,9 +71,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } else {
       setCurrentCardIndex(0);
     }
-    
-    // Now set quizResult to null AFTER changing the card
-    setQuizResult(null);
   };
 
   const checkAnswer = (userAnswer: string): QuizResult => {
