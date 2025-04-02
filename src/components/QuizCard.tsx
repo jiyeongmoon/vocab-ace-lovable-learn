@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,7 +21,6 @@ const QuizCard: React.FC = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
 
-  // Reset local state when current card changes
   useEffect(() => {
     setUserAnswer("");
     setShowAnswer(false);
@@ -47,13 +45,8 @@ const QuizCard: React.FC = () => {
     
     if (!userAnswer.trim()) return;
     
-    // Update the card's userAnswer
     updateCard(currentCard.id, { userAnswer });
-    
-    // Check the answer
     checkAnswer(userAnswer);
-    
-    // Show the answer area
     setShowAnswer(true);
   };
 
@@ -79,11 +72,9 @@ const QuizCard: React.FC = () => {
     ? Math.min((currentCard.correctCount / 10) * 100, 100) 
     : 0;
 
-  // Function to bold the word in example sentence
   const formatExampleSentence = (sentence: string, word: string) => {
     if (!sentence) return "";
     
-    // Case-insensitive match
     const regex = new RegExp(`\\b(${word})\\b`, 'gi');
     return sentence.replace(regex, '**$1**');
   };
@@ -92,7 +83,6 @@ const QuizCard: React.FC = () => {
     ? formatExampleSentence(currentCard.exampleSentence, currentCard.word)
     : "";
 
-  // Get all the possible correct meanings as an array
   const getAllMeanings = () => {
     return currentCard.meaning.split(',').map(meaning => meaning.trim());
   };
@@ -113,12 +103,12 @@ const QuizCard: React.FC = () => {
       
       <CardContent className="space-y-6">
         <div className="text-center">
-          <div className="text-3xl font-bold mb-2">{currentCard.word}</div>
+          <div className="text-3xl font-bold mb-3">{currentCard.word}</div>
           
           {currentCard.exampleSentence && (
-            <div className="text-lg sm:text-xl text-gray-600 mb-3 prose prose-sm max-w-none">
+            <div className="text-2xl leading-relaxed text-gray-700 mb-4">
               <span dangerouslySetInnerHTML={{ 
-                __html: formattedSentence.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                __html: formattedSentence.replace(/\*\*(.*?)\*\*/g, '<strong class="text-black">$1</strong>') 
               }} />
             </div>
           )}
@@ -152,24 +142,24 @@ const QuizCard: React.FC = () => {
         </form>
         
         {showAnswer && (
-          <div className={`p-4 rounded-md ${quizResult === "Correct" ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+          <div className={`p-4 rounded-md ${quizResult === "Correct" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
             <div className="flex items-start gap-3">
               {quizResult === "Correct" ? (
-                <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
               ) : (
-                <XCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <XCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
               )}
               
               <div className="flex-1">
-                <p className="font-medium mb-1">
+                <p className="font-semibold text-lg mb-2">
                   {quizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
                 </p>
-                <p className="text-sm">
+                <p className="text-base">
                   <span className="font-medium">Correct meanings:</span> {currentCard.meaning}
                 </p>
                 
                 {currentCard.exampleSentence && (
-                  <div className="text-sm mt-2 italic prose prose-sm max-w-none">
+                  <div className="text-sm mt-2 italic opacity-75">
                     <span dangerouslySetInnerHTML={{ 
                       __html: formattedSentence.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
                     }} />
