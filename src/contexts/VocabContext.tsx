@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
 import { VocabContextType } from "./types";
@@ -58,10 +59,12 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const resetUserAnswer = () => {
+    // Always explicitly reset quizResult to null
+    setQuizResult(null);
+    
     if (currentCard) {
       updateCard(currentCard.id, { userAnswer: "" });
     }
-    setQuizResult(null);
   };
 
   const nextCard = () => {
@@ -85,6 +88,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
     
+    console.log("checkAnswer setting quizResult to:", result);
     setQuizResult(result);
     
     if (isCorrect) {

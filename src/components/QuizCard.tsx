@@ -105,6 +105,13 @@ const QuizCard: React.FC = () => {
     return currentCard.meaning.split(',').map(meaning => meaning.trim());
   };
 
+  // Add debug console logging to troubleshoot
+  console.log("QuizCard render state:", { 
+    showAnswer, 
+    quizResult,
+    currentCard: currentCard?.id
+  });
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -160,9 +167,7 @@ const QuizCard: React.FC = () => {
         </form>
         
         {/* Debug line to show current result */}
-        {showAnswer && (
-          <p className="text-xs text-gray-500">Debug: Result = {quizResult}</p>
-        )}
+        <p className="text-xs text-gray-500">Debug: showAnswer={String(showAnswer)}, quizResult={quizResult}</p>
         
         {showAnswer && quizResult && (
           <div className={`p-4 rounded-md ${quizResult === "Correct" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
