@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useVocab } from "@/contexts/VocabContext";
@@ -21,19 +20,21 @@ const QuizCard: React.FC = () => {
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
+  const hasSubmittedAnswer = useRef(false);
 
-  // Reset user input AND showAnswer state when the card changes
+  // Reset states when card changes
   useEffect(() => {
     if (currentCard) {
       setUserAnswer("");
       setAttemptedRetry(false);
       setShowAnswer(false);
+      hasSubmittedAnswer.current = false;
     }
   }, [currentCard?.id]);
 
-  // Set showAnswer when quizResult changes
+  // Handle quizResult changes
   useEffect(() => {
-    if (quizResult) {
+    if (quizResult && hasSubmittedAnswer.current) {
       setShowAnswer(true);
     }
   }, [quizResult]);
@@ -70,6 +71,9 @@ const QuizCard: React.FC = () => {
     
     if (!userAnswer.trim()) return;
     
+    // Mark that we've submitted an answer this cycle
+    hasSubmittedAnswer.current = true;
+    
     // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
     
@@ -85,6 +89,7 @@ const QuizCard: React.FC = () => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(true);
+    hasSubmittedAnswer.current = false;
   };
 
   const openDictionary = () => {

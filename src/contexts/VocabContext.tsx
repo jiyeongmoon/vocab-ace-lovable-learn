@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
 import { VocabContextType } from "./types";
@@ -66,13 +67,14 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     resetUserAnswer();
     
+    // Always explicitly reset quiz result first before changing card
+    setQuizResult(null);
+    
     if (incompleteCards.length > 0) {
       setCurrentCardIndex(prev => (prev + 1) % incompleteCards.length);
     } else {
       setCurrentCardIndex(0);
     }
-    
-    setQuizResult(null);
   };
 
   const checkAnswer = (userAnswer: string): QuizResult => {
