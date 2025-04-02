@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,7 +35,8 @@ const QuizCard: React.FC = () => {
 
   // Handle quizResult changes
   useEffect(() => {
-    if (quizResult && hasSubmittedAnswer.current) {
+    console.log("quizResult changed:", quizResult, "hasSubmittedAnswer:", hasSubmittedAnswer.current);
+    if (quizResult !== null && hasSubmittedAnswer.current) {
       setShowAnswer(true);
     }
   }, [quizResult]);
@@ -78,6 +80,7 @@ const QuizCard: React.FC = () => {
     updateCard(currentCard.id, { userAnswer });
     
     // Use the context's checkAnswer function
+    console.log("About to check answer, hasSubmittedAnswer:", hasSubmittedAnswer.current);
     checkAnswer(userAnswer);
   };
 
@@ -115,6 +118,8 @@ const QuizCard: React.FC = () => {
     return currentCard.meaning.split(',').map(meaning => meaning.trim());
   };
 
+  console.log("Rendering state:", { showAnswer, quizResult, hasSubmittedAnswer: hasSubmittedAnswer.current });
+  
   return (
     <Card className="w-full">
       <CardHeader>
