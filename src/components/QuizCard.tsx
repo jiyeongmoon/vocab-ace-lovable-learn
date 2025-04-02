@@ -149,7 +149,7 @@ const QuizCard: React.FC = () => {
               
               <div className="flex-1">
                 <p className="font-medium mb-1">
-                  {quizResult === "Correct" ? "Correct!" : "Incorrect"}
+                  {quizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
                 </p>
                 <p className="text-sm">
                   <span className="font-medium">Correct meaning:</span> {currentCard.meaning}
@@ -174,7 +174,7 @@ const QuizCard: React.FC = () => {
                 className="flex items-center text-xs"
               >
                 <Search className="mr-1 h-3.5 w-3.5" />
-                Search in Cambridge Dictionary
+                🔍 Search in Cambridge Dictionary
               </Button>
               
               {quizResult === "Incorrect" && !attemptedRetry && (
