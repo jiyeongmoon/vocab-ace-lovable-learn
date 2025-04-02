@@ -110,6 +110,14 @@ const QuizCard: React.FC = () => {
         <div className="text-center">
           <div className="text-3xl font-bold mb-2">{currentCard.word}</div>
           
+          {currentCard.exampleSentence && (
+            <div className="text-sm text-gray-600 mb-3 prose prose-sm max-w-none">
+              <span dangerouslySetInnerHTML={{ 
+                __html: formattedSentence.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+              }} />
+            </div>
+          )}
+          
           <div className="text-sm text-gray-500 flex items-center justify-center gap-2">
             <Progress value={progressPercentage} className="w-24 h-2" />
             <span>{currentCard.correctCount}/10</span>
