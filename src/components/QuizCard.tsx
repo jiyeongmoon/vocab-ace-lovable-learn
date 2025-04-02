@@ -178,9 +178,17 @@ const QuizCard: React.FC = () => {
                 <p className="font-semibold text-lg mb-2">
                   {quizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
                 </p>
-                <p className="text-base">
-                  <span className="font-medium">Correct meanings:</span> {currentCard.meaning}
-                </p>
+                <div className="text-base mb-2">
+                  <span className="font-medium">Your answer:</span> {userAnswer}
+                </div>
+                <div className="text-base">
+                  <span className="font-medium">Correct meanings:</span>
+                  <ul className="list-disc pl-5 mt-1">
+                    {getAllMeanings().map((meaning, index) => (
+                      <li key={index} className="text-sm">{meaning}</li>
+                    ))}
+                  </ul>
+                </div>
                 
                 {currentCard.exampleSentence && (
                   <div className="text-sm mt-2 italic opacity-75">
