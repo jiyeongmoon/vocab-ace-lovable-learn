@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
 import { VocabContextType } from "./types";
@@ -20,18 +19,15 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [quizMode, setQuizMode] = useState<boolean>(false);
   const [incompleteCards, setIncompleteCards] = useState<VocabularyCard[]>([]);
   
-  // Load cards from localStorage on initial render
   useEffect(() => {
     const loadedCards = loadCardsFromStorage();
     setCards(loadedCards);
   }, []);
 
-  // Save cards to localStorage whenever they change
   useEffect(() => {
     saveCardsToStorage(cards);
   }, [cards]);
 
-  // Update incomplete cards whenever cards change
   useEffect(() => {
     const filtered = cards.filter(card => !card.completed);
     const shuffled = [...filtered].sort(() => Math.random() - 0.5);
@@ -71,11 +67,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     resetUserAnswer();
     
-    // If we have incomplete cards, set the index to the next one
     if (incompleteCards.length > 0) {
       setCurrentCardIndex(prev => (prev + 1) % incompleteCards.length);
     } else {
-      // If no incomplete cards, reset the current card index
       setCurrentCardIndex(0);
     }
   };
@@ -83,19 +77,16 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const checkAnswer = (userAnswer: string): QuizResult => {
     if (!currentCard) return null;
     
-    // Normalize the user answer and correct meanings
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const correctMeanings = currentCard.meaning
       .split(',')
       .map(meaning => meaning.trim().toLowerCase());
     
-    // Check if user answer matches any of the correct meanings
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
     
     setQuizResult(result);
     
-    // If correct, update the card's correct count and possibly mark as completed
     if (isCorrect) {
       const newCorrectCount = currentCard.correctCount + 1;
       const completed = newCorrectCount >= 10;
@@ -113,7 +104,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return result;
   };
 
-  // Computed properties
   const currentCard = incompleteCards.length > 0 ? incompleteCards[currentCardIndex] : null;
   const completedCards = cards.filter(card => card.completed);
 

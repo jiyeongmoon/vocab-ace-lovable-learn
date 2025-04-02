@@ -6,7 +6,6 @@ import { useVocab } from "@/contexts/VocabContext";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, XCircle, BookOpen, ArrowRight, Search, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import { QuizResult } from "@/types/vocab";
 
 const QuizCard: React.FC = () => {
   const { 
@@ -14,19 +13,19 @@ const QuizCard: React.FC = () => {
     nextCard, 
     resetUserAnswer, 
     updateCard,
-    incompleteCards
+    incompleteCards,
+    checkAnswer,
+    quizResult
   } = useVocab();
   
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
-  const [localQuizResult, setLocalQuizResult] = useState<QuizResult>(null);
 
   useEffect(() => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(false);
-    setLocalQuizResult(null);
   }, [currentCard?.id]);
 
   // Handle keydown for Enter key to move to next word
@@ -56,34 +55,6 @@ const QuizCard: React.FC = () => {
     );
   }
 
-  // Local function to check the answer
-  const checkAnswerLocally = (answer: string): QuizResult => {
-    if (!currentCard) return null;
-    
-    // Normalize the user answer and correct meanings
-    const normalizedUserAnswer = answer.trim().toLowerCase();
-    const correctMeanings = currentCard.meaning
-      .split(',')
-      .map(meaning => meaning.trim().toLowerCase());
-    
-    // Check if user answer matches any of the correct meanings
-    const isCorrect = correctMeanings.includes(normalizedUserAnswer);
-    const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
-    
-    // If correct, update the card's correct count and possibly mark as completed
-    if (isCorrect) {
-      const newCorrectCount = currentCard.correctCount + 1;
-      const completed = newCorrectCount >= 10;
-      
-      updateCard(currentCard.id, { 
-        correctCount: newCorrectCount,
-        completed
-      });
-    }
-    
-    return result;
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -92,9 +63,8 @@ const QuizCard: React.FC = () => {
     // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
     
-    // Check the answer locally
-    const result = checkAnswerLocally(userAnswer);
-    setLocalQuizResult(result);
+    // Use the context's checkAnswer function
+    checkAnswer(userAnswer);
     setShowAnswer(true);
   };
 
@@ -103,7 +73,6 @@ const QuizCard: React.FC = () => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(false);
-    setLocalQuizResult(null);
     nextCard();
   };
 
@@ -111,7 +80,6 @@ const QuizCard: React.FC = () => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(true);
-    setLocalQuizResult(null);
   };
 
   const openDictionary = () => {
@@ -193,13 +161,13 @@ const QuizCard: React.FC = () => {
         
         {/* Debug line to show current result */}
         {showAnswer && (
-          <p className="text-xs text-gray-500">Debug: Result = {localQuizResult}</p>
+          <p className="text-xs text-gray-500">Debug: Result = {quizResult}</p>
         )}
         
-        {showAnswer && localQuizResult && (
-          <div className={`p-4 rounded-md ${localQuizResult === "Correct" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
+        {showAnswer && quizResult && (
+          <div className={`p-4 rounded-md ${quizResult === "Correct" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
             <div className="flex items-start gap-3">
-              {localQuizResult === "Correct" ? (
+              {quizResult === "Correct" ? (
                 <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
               ) : (
                 <XCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
@@ -207,7 +175,7 @@ const QuizCard: React.FC = () => {
               
               <div className="flex-1">
                 <p className="font-semibold text-lg mb-2">
-                  {localQuizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
+                  {quizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
                 </p>
                 <p className="text-base">
                   <span className="font-medium">Correct meanings:</span> {currentCard.meaning}
@@ -235,7 +203,7 @@ const QuizCard: React.FC = () => {
                 🔍 Search in Cambridge Dictionary
               </Button>
               
-              {localQuizResult === "Incorrect" && !attemptedRetry && (
+              {quizResult === "Incorrect" && !attemptedRetry && (
                 <Button
                   type="button"
                   variant="outline"
@@ -257,7 +225,7 @@ const QuizCard: React.FC = () => {
           <Button 
             onClick={handleNext} 
             className="w-full"
-            variant={localQuizResult === "Correct" ? "default" : "outline"}
+            variant={quizResult === "Correct" ? "default" : "outline"}
           >
             Next Word <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
