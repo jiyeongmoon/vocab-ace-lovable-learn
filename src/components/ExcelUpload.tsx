@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useVocab } from "@/contexts/VocabContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Upload, FileText, AlertTriangle, X } from "lucide-react";
+import { Upload, FileText, AlertTriangle, X, Download } from "lucide-react";
 import * as XLSX from "xlsx";
 
 const ExcelUpload: React.FC = () => {
@@ -38,6 +38,33 @@ const ExcelUpload: React.FC = () => {
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const downloadTemplate = () => {
+    // Create a template workbook with example data
+    const worksheet = XLSX.utils.json_to_sheet([
+      { Word: "example", Meaning: "an instance serving to illustrate", "Example Sentence": "This is an example sentence." },
+      { Word: "vocabulary", Meaning: "a list of words and their meanings", "Example Sentence": "Expanding your vocabulary helps with language learning." }
+    ]);
+    
+    // Set column widths for better appearance
+    const wscols = [
+      { wch: 15 }, // Word
+      { wch: 30 }, // Meaning
+      { wch: 40 }  // Example Sentence
+    ];
+    worksheet['!cols'] = wscols;
+    
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "VocabularyTemplate");
+    
+    // Generate and download the file
+    XLSX.writeFile(workbook, "vocabulary_import_template.xlsx");
+    
+    toast({
+      title: "Template Downloaded",
+      description: "Fill in the template with your vocabulary and import it back.",
+    });
   };
 
   const processFile = async () => {
@@ -117,14 +144,26 @@ const ExcelUpload: React.FC = () => {
                   Your file should contain columns: Word, Meaning, and optionally Example Sentence
                 </p>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Browse Files
-              </Button>
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Browse Files
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadTemplate}
+                  className="flex items-center"
+                >
+                  <Download className="mr-1 h-4 w-4" />
+                  Download Template
+                </Button>
+              </div>
               <input
                 ref={fileInputRef}
                 type="file"
