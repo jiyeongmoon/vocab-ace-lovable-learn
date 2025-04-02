@@ -138,9 +138,6 @@ const QuizCard: React.FC = () => {
     return currentCard.meaning.split(',').map(meaning => meaning.trim());
   };
 
-  // Use local quiz result state for rendering
-  const quizResult = localQuizResult;
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -195,10 +192,15 @@ const QuizCard: React.FC = () => {
           )}
         </form>
         
+        {/* Debug line to show current result */}
         {showAnswer && (
-          <div className={`p-4 rounded-md ${quizResult === "Correct" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
+          <p className="text-xs text-gray-500">Debug: Result = {localQuizResult}</p>
+        )}
+        
+        {showAnswer && localQuizResult && (
+          <div className={`p-4 rounded-md ${localQuizResult === "Correct" ? "bg-green-50 border border-green-200" : "bg-red-50 border border-red-200"}`}>
             <div className="flex items-start gap-3">
-              {quizResult === "Correct" ? (
+              {localQuizResult === "Correct" ? (
                 <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0 mt-0.5" />
               ) : (
                 <XCircle className="h-6 w-6 text-red-500 flex-shrink-0 mt-0.5" />
@@ -206,7 +208,7 @@ const QuizCard: React.FC = () => {
               
               <div className="flex-1">
                 <p className="font-semibold text-lg mb-2">
-                  {quizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
+                  {localQuizResult === "Correct" ? "Correct! ✅" : "Incorrect ❌"}
                 </p>
                 <p className="text-base">
                   <span className="font-medium">Correct meanings:</span> {currentCard.meaning}
@@ -234,7 +236,7 @@ const QuizCard: React.FC = () => {
                 🔍 Search in Cambridge Dictionary
               </Button>
               
-              {quizResult === "Incorrect" && !attemptedRetry && (
+              {localQuizResult === "Incorrect" && !attemptedRetry && (
                 <Button
                   type="button"
                   variant="outline"
@@ -256,7 +258,7 @@ const QuizCard: React.FC = () => {
           <Button 
             onClick={handleNext} 
             className="w-full"
-            variant={quizResult === "Correct" ? "default" : "outline"}
+            variant={localQuizResult === "Correct" ? "default" : "outline"}
           >
             Next Word <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
