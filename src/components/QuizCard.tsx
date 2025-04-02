@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useVocab } from "@/contexts/VocabContext";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, XCircle, BookOpen, ArrowRight } from "lucide-react";
+import { CheckCircle, XCircle, BookOpen, ArrowRight, Search, RotateCcw } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 const QuizCard: React.FC = () => {
@@ -20,11 +20,13 @@ const QuizCard: React.FC = () => {
   
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
+  const [attemptedRetry, setAttemptedRetry] = useState(false);
 
   // Reset local state when current card changes
   useEffect(() => {
     setUserAnswer("");
     setShowAnswer(false);
+    setAttemptedRetry(false);
   }, [currentCard?.id]);
 
   if (!currentCard) {
@@ -59,12 +61,36 @@ const QuizCard: React.FC = () => {
     resetUserAnswer();
     setUserAnswer("");
     setShowAnswer(false);
+    setAttemptedRetry(false);
     nextCard();
+  };
+
+  const handleRetry = () => {
+    setUserAnswer("");
+    setShowAnswer(false);
+    setAttemptedRetry(true);
+  };
+
+  const openDictionary = () => {
+    window.open(`https://dictionary.cambridge.org/ko/사전/영어-한국어/${encodeURIComponent(currentCard.word)}`, '_blank');
   };
 
   const progressPercentage = currentCard 
     ? Math.min((currentCard.correctCount / 10) * 100, 100) 
     : 0;
+
+  // Function to bold the word in example sentence
+  const formatExampleSentence = (sentence: string, word: string) => {
+    if (!sentence) return "";
+    
+    // Case-insensitive match
+    const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+    return sentence.replace(regex, '**$1**');
+  };
+
+  const formattedSentence = currentCard.exampleSentence 
+    ? formatExampleSentence(currentCard.exampleSentence, currentCard.word)
+    : "";
 
   return (
     <Card className="w-full">
@@ -102,7 +128,11 @@ const QuizCard: React.FC = () => {
           </div>
           
           {!showAnswer && (
-            <Button type="submit" className="w-full" disabled={!userAnswer.trim()}>
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={!userAnswer.trim()}
+            >
               Check Answer
             </Button>
           )}
@@ -124,12 +154,41 @@ const QuizCard: React.FC = () => {
                 <p className="text-sm">
                   <span className="font-medium">Correct meaning:</span> {currentCard.meaning}
                 </p>
+                
                 {currentCard.exampleSentence && (
-                  <p className="text-sm mt-2 italic">
-                    "{currentCard.exampleSentence}"
-                  </p>
+                  <div className="text-sm mt-2 italic prose prose-sm max-w-none">
+                    <span dangerouslySetInnerHTML={{ 
+                      __html: formattedSentence.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                    }} />
+                  </div>
                 )}
               </div>
+            </div>
+            
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={openDictionary}
+                className="flex items-center text-xs"
+              >
+                <Search className="mr-1 h-3.5 w-3.5" />
+                Search in Cambridge Dictionary
+              </Button>
+              
+              {quizResult === "Incorrect" && !attemptedRetry && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleRetry}
+                  className="flex items-center text-xs"
+                >
+                  <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                  Retry
+                </Button>
+              )}
             </div>
           </div>
         )}
