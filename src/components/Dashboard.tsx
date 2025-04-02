@@ -1,0 +1,206 @@
+
+import React from "react";
+import { useVocab } from "@/contexts/VocabContext";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import {
+  BookOpen,
+  List,
+  Upload,
+  Plus,
+  CheckCircle,
+  Clock,
+  BarChart3,
+} from "lucide-react";
+
+import CardForm from "./CardForm";
+import QuizCard from "./QuizCard";
+import WordList from "./WordList";
+import ExcelUpload from "./ExcelUpload";
+
+const Dashboard: React.FC = () => {
+  const { cards, incompleteCards, completedCards, quizMode, setQuizMode } = useVocab();
+  
+  // Calculate stats
+  const totalWords = cards.length;
+  const masteredWords = completedCards.length;
+  const masteredPercentage = totalWords > 0 
+    ? Math.round((masteredWords / totalWords) * 100) 
+    : 0;
+
+  return (
+    <div className="container py-6 max-w-5xl">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Vocab Ace</h1>
+          <p className="text-muted-foreground">Master new vocabulary through spaced repetition</p>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            variant={quizMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setQuizMode(true)}
+            className="flex items-center"
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Quiz Mode
+          </Button>
+          <Button
+            variant={!quizMode ? "default" : "outline"}
+            size="sm"
+            onClick={() => setQuizMode(false)}
+            className="flex items-center"
+          >
+            <List className="mr-2 h-4 w-4" />
+            Manage Words
+          </Button>
+        </div>
+      </div>
+      
+      {/* Stats Section */}
+      {!quizMode && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+          <Card>
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-full bg-blue-100">
+                <BookOpen className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Words</p>
+                <p className="text-2xl font-bold">{totalWords}</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-full bg-green-100">
+                <CheckCircle className="h-5 w-5 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Mastered</p>
+                <p className="text-2xl font-bold">{masteredWords}</p>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className="p-3 rounded-full bg-amber-100">
+                <Clock className="h-5 w-5 text-amber-600" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">In Progress</p>
+                <p className="text-2xl font-bold">{incompleteCards.length}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      
+      {/* Quiz Mode */}
+      {quizMode ? (
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
+            <QuizCard />
+          </div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="mr-2 h-5 w-5" />
+                  Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col space-y-4">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Mastered Words</span>
+                      <span className="font-medium">{masteredPercentage}%</span>
+                    </div>
+                    <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-green-500 rounded-full"
+                        style={{ width: `${masteredPercentage}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <div className="border rounded-md p-3">
+                      <div className="text-sm text-muted-foreground">Mastered</div>
+                      <div className="text-xl font-bold">{masteredWords}</div>
+                    </div>
+                    <div className="border rounded-md p-3">
+                      <div className="text-sm text-muted-foreground">Remaining</div>
+                      <div className="text-xl font-bold">{incompleteCards.length}</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  {totalWords === 0 ? (
+                    <Button
+                      variant="outline"
+                      className="w-full"
+                      onClick={() => setQuizMode(false)}
+                    >
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Vocabulary
+                    </Button>
+                  ) : null}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      ) : (
+        // Management Mode
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <div className="xl:col-span-2">
+            <Tabs defaultValue="list">
+              <TabsList className="mb-4">
+                <TabsTrigger value="list" className="flex items-center">
+                  <List className="mr-2 h-4 w-4" />
+                  Word List
+                </TabsTrigger>
+                <TabsTrigger value="import" className="flex items-center">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="list" className="m-0">
+                <WordList />
+              </TabsContent>
+              
+              <TabsContent value="import" className="m-0">
+                <ExcelUpload />
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          <div>
+            <CardForm />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Dashboard;
