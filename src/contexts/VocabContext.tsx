@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { VocabularyCard, QuizResult } from "@/types/vocab";
-import { VocabContextType } from "./types";
+import { VocabularyCard } from "@/types/vocab";
+import { VocabContextType, QuizResult } from "./types";
 import {
   LOCAL_STORAGE_KEY,
   createNewCard,
@@ -12,12 +12,14 @@ import {
   setOpenAIEnabled
 } from "./vocabUtils";
 
+export type QuizResultMap = Record<string, QuizResult>;
+
 const VocabContext = createContext<VocabContextType | undefined>(undefined);
 
 export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cards, setCards] = useState<VocabularyCard[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
-  const [quizResult, setQuizResult] = useState<QuizResult>(null);
+  const [quizResultMap, setQuizResultMap] = useState<QuizResultMap>({});
   const [quizMode, setQuizMode] = useState<boolean>(false);
   const [incompleteCards, setIncompleteCards] = useState<VocabularyCard[]>([]);
   const [openAIEnabled, setOpenAIEnabledState] = useState<boolean>(isOpenAIEnabled());
@@ -70,7 +72,14 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     console.log("VocabContext - nextCard - Resetting quizResult");
 
-    setQuizResult(null);
+    if (currentCard) {
+      setQuizResultMap(prev => {
+        const updated = { ...prev };
+        delete updated[currentCard.id];
+        return updated;
+      });
+    }
+
     resetUserAnswer();
 
     if (incompleteCards.length > 0) {
@@ -81,9 +90,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const checkAnswer = (userAnswer: string) => {
-    if (!currentCard) return null;
-
-    setQuizResult(null);
+    if (!currentCard) return;
 
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const correctMeanings = currentCard.meaning
@@ -95,7 +102,10 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     console.log("VocabContext - Setting quiz result to:", result);
 
-    setQuizResult(result);
+    setQuizResultMap(prev => ({
+      ...prev,
+      [currentCard.id]: result,
+    }));
 
     if (isCorrect) {
       const newCorrectCount = currentCard.correctCount + 1;
@@ -110,8 +120,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
       }
     }
-
-    return null;
   };
 
   const toggleOpenAI = (enabled: boolean) => {
@@ -141,7 +149,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentCard,
     nextCard,
     checkAnswer,
-    quizResult,
+    quizResultMap,
     resetUserAnswer,
     generateExampleSentence: generateSentence,
     incompleteCards,
