@@ -69,16 +69,21 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const nextCard = () => {
     console.log("VocabContext - nextCard - Resetting quizResult");
+  
+    // ✅ 1. 정답 피드백 상태를 먼저 지워줍니다!
     setQuizResult(null);
-    
+  
+    // ✅ 2. 사용자 입력값 초기화
     resetUserAnswer();
-    
+  
+    // ✅ 3. 다음 카드 인덱스 설정
     if (incompleteCards.length > 0) {
       setCurrentCardIndex(prev => (prev + 1) % incompleteCards.length);
     } else {
       setCurrentCardIndex(0);
     }
   };
+
 
   const checkAnswer = (userAnswer: string) => {
     if (!currentCard) return null;
