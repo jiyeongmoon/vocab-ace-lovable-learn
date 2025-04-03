@@ -1,7 +1,12 @@
 // Updated QuizCard.tsx
 import React, { useState, useEffect, useRef } from "react";
 import { useVocab } from "@/contexts/VocabContext";
-import { Card, CardContent, CardFooter, CardHeader } from "../../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "../../components/ui/card";
 import QuizFeedback from "./QuizFeedback";
 import QuizForm from "./QuizForm";
 import QuizCardEmpty from "./QuizCardEmpty";
