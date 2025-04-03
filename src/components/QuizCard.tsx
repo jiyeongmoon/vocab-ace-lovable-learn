@@ -85,9 +85,11 @@ const QuizCard: React.FC = () => {
   };
 
   const handleNext = () => {
-    // Force reset the state for the next card
+    // Force reset all state for the next card
     hasSubmittedAnswer.current = false;
     setShowAnswer(false);
+    setUserAnswer("");
+    setAttemptedRetry(false);
     nextCard();
   };
 

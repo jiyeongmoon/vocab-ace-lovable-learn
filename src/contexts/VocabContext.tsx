@@ -113,7 +113,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
         }
       }
-    }, 10);
+    }, 50); // Increased delay for better state management
     
     return null; // No longer return immediately, let the async process handle it
   };

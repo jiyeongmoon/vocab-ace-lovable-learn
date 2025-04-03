@@ -1,15 +1,68 @@
 
 import React, { useState, useEffect } from "react";
-import { VocabProvider } from "@/contexts/VocabContext";
+import { VocabProvider, useVocab } from "@/contexts/VocabContext";
 import QuizCard from "@/components/QuizCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 
-const Quiz = () => {
-  const navigate = useNavigate();
+// Component to handle quiz statistics
+const QuizStatistics = () => {
+  const { quizResult } = useVocab();
   const [correct, setCorrect] = useState(0);
   const [total, setTotal] = useState(0);
+
+  // Update stats when quiz result changes
+  useEffect(() => {
+    if (quizResult === "Correct") {
+      setCorrect(prev => prev + 1);
+      setTotal(prev => prev + 1);
+    } else if (quizResult === "Incorrect") {
+      setTotal(prev => prev + 1);
+    }
+  }, [quizResult]);
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <div className="flex items-center mb-4">
+          <BarChart3 className="mr-2 h-5 w-5 text-blue-600" />
+          <h2 className="text-lg font-semibold">Quiz Statistics</h2>
+        </div>
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Complete quizzes to track your progress and master vocabulary words.
+            Each word requires 10 correct answers to be considered mastered.
+          </p>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="border rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Session Correct</div>
+              <div className="text-xl font-bold">{correct}</div>
+            </div>
+            <div className="border rounded-md p-3">
+              <div className="text-sm text-muted-foreground">Session Total</div>
+              <div className="text-xl font-bold">{total}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div className="bg-white p-6 rounded-lg border shadow-sm">
+        <h3 className="text-lg font-semibold mb-3">Quiz Tips</h3>
+        <ul className="space-y-2 text-sm text-gray-600">
+          <li>• If English - type Korean Meaning</li>
+          <li>• Review words regularly to reinforce learning</li>
+          <li>• Use the example sentences to understand context</li>
+          <li>• Press Enter to quickly move to the next word</li>
+          <li>• Click on dictionary links for more detailed meanings</li>
+        </ul>
+      </div>
+    </div>
+  );
+};
+
+const Quiz = () => {
+  const navigate = useNavigate();
 
   return (
     <VocabProvider>
@@ -31,41 +84,7 @@ const Quiz = () => {
             <div className="xl:col-span-2">
               <QuizCard />
             </div>
-            <div className="space-y-6">
-              <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <div className="flex items-center mb-4">
-                  <BarChart3 className="mr-2 h-5 w-5 text-blue-600" />
-                  <h2 className="text-lg font-semibold">Quiz Statistics</h2>
-                </div>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Complete quizzes to track your progress and master vocabulary words.
-                    Each word requires 10 correct answers to be considered mastered.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="border rounded-md p-3">
-                      <div className="text-sm text-muted-foreground">Session Correct</div>
-                      <div className="text-xl font-bold">{correct}</div>
-                    </div>
-                    <div className="border rounded-md p-3">
-                      <div className="text-sm text-muted-foreground">Session Total</div>
-                      <div className="text-xl font-bold">{total}</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-white p-6 rounded-lg border shadow-sm">
-                <h3 className="text-lg font-semibold mb-3">Quiz Tips</h3>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>• If English - type Korean Meaning</li>
-                  <li>• Review words regularly to reinforce learning</li>
-                  <li>• Use the example sentences to understand context</li>
-                  <li>• Press Enter to quickly move to the next word</li>
-                  <li>• Click on dictionary links for more detailed meanings</li>
-                </ul>
-              </div>
-            </div>
+            <QuizStatistics />
           </div>
         </div>
       </div>
