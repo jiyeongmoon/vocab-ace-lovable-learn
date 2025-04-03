@@ -22,16 +22,17 @@ const QuizCard: React.FC = () => {
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
-  const answerSubmitted = useRef(false);
+  const hasSubmittedAnswer = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Reset states when card changes
   useEffect(() => {
     if (currentCard) {
+      // Important: Reset all states when a new card is shown
       setUserAnswer("");
-      setAttemptedRetry(false);
       setShowAnswer(false);
-      answerSubmitted.current = false;
+      setAttemptedRetry(false);
+      hasSubmittedAnswer.current = false;
       
       // Focus the input field when a new card is shown
       setTimeout(() => {
@@ -40,13 +41,9 @@ const QuizCard: React.FC = () => {
     }
   }, [currentCard?.id]);
 
-  // Directly watch quizResult changes to show feedback
+  // Show feedback only after the user has submitted an answer and we have a result
   useEffect(() => {
-    console.log("quizResult changed:", quizResult, "answerSubmitted:", answerSubmitted.current);
-    
-    // Always show feedback if we have a result, regardless of answerSubmitted
-    // This is critical to ensure feedback always appears
-    if (quizResult !== null) {
+    if (quizResult !== null && hasSubmittedAnswer.current) {
       setShowAnswer(true);
     }
   }, [quizResult]);
@@ -74,14 +71,14 @@ const QuizCard: React.FC = () => {
     
     if (!userAnswer.trim()) return;
     
-    // Set flag to indicate we've submitted an answer
-    answerSubmitted.current = true;
+    // Set flag to indicate we've submitted an answer - this must happen BEFORE checking answer
+    hasSubmittedAnswer.current = true;
     
-    // Update the card with the user's answer and show feedback
+    // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
     
-    // Check the answer - this will eventually update quizResult
-    console.log("About to check answer, answerSubmitted:", answerSubmitted.current);
+    // Check the answer - this will update quizResult
+    console.log("Submitting answer:", userAnswer);
     checkAnswer(userAnswer);
   };
 
@@ -90,9 +87,9 @@ const QuizCard: React.FC = () => {
     setShowAnswer(false);
     setUserAnswer("");
     setAttemptedRetry(false);
-    answerSubmitted.current = false;
+    hasSubmittedAnswer.current = false;
     
-    // Then move to the next card
+    // Then move to the next card (which will also reset the quizResult in the context)
     nextCard();
   };
 
@@ -100,7 +97,7 @@ const QuizCard: React.FC = () => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(true);
-    answerSubmitted.current = false;
+    hasSubmittedAnswer.current = false;
     
     // Focus the input field when retrying
     setTimeout(() => {
@@ -122,7 +119,7 @@ const QuizCard: React.FC = () => {
   console.log("Rendering state:", { 
     showAnswer, 
     quizResult, 
-    answerSubmitted: answerSubmitted.current 
+    hasSubmittedAnswer: hasSubmittedAnswer.current 
   });
   
   return (
@@ -144,7 +141,7 @@ const QuizCard: React.FC = () => {
           inputRef={inputRef}
         />
         
-        {showAnswer && quizResult && (
+        {showAnswer && quizResult && hasSubmittedAnswer.current && (
           <QuizFeedback
             currentCard={currentCard}
             quizResult={quizResult}

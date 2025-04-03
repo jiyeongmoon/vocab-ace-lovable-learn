@@ -69,7 +69,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const nextCard = () => {
-    // First clear the quiz result
+    // Always reset the quiz result first to ensure clean state for next card
     setQuizResult(null);
     
     // Then reset the user answer
@@ -83,43 +83,40 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const checkAnswer = (userAnswer: string): QuizResult => {
+  const checkAnswer = (userAnswer: string) => {
     if (!currentCard) return null;
     
-    // Make sure to clear the previous result first
+    // First reset any previous quiz result to ensure a clean state
     setQuizResult(null);
     
-    // Use a direct synchronous check for logging purposes
+    // Clean up user answer and get correct meanings
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const correctMeanings = currentCard.meaning
       .split(',')
       .map(meaning => meaning.trim().toLowerCase());
     
+    // Determine if answer is correct
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
     
-    console.log("CheckAnswer about to set quizResult to:", result);
+    console.log("Setting quiz result to:", result);
     
-    // Use a shorter delay to update the state more quickly
-    // This helps ensure the UI responds faster
-    setTimeout(() => {
-      console.log("Setting quiz result in timeout to:", result);
-      setQuizResult(result);
+    // Set the result synchronously - removing the setTimeout to avoid race conditions
+    setQuizResult(result);
+    
+    if (isCorrect) {
+      const newCorrectCount = currentCard.correctCount + 1;
+      const completed = newCorrectCount >= 10;
       
-      if (isCorrect) {
-        const newCorrectCount = currentCard.correctCount + 1;
-        const completed = newCorrectCount >= 10;
-        
-        updateCard(currentCard.id, { 
-          correctCount: newCorrectCount,
-          completed
-        });
-        
-        if (completed) {
-          showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
-        }
+      updateCard(currentCard.id, { 
+        correctCount: newCorrectCount,
+        completed
+      });
+      
+      if (completed) {
+        showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
       }
-    }, 50); // Using a shorter delay for more responsive feedback
+    }
     
     return null;
   };
