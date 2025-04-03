@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
 import { XCircle, CheckCircle, Search, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,22 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
   onRetry,
   formattedSentence
 }) => {
+  // Debug log to see what props we're receiving
+  useEffect(() => {
+    console.log("QuizFeedback props:", { 
+      quizResult, 
+      userAnswer, 
+      currentCardWord: currentCard?.word,
+      attemptedRetry 
+    });
+  }, [quizResult, userAnswer, currentCard, attemptedRetry]);
+
+  // Safety check - early return with debug message if no quiz result
+  if (!quizResult) {
+    console.log("QuizFeedback - No quiz result, not rendering");
+    return <div className="p-4 bg-yellow-100 rounded-md">Waiting for quiz result...</div>;
+  }
+
   const openDictionary = () => {
     window.open(`https://dictionary.cambridge.org/ko/사전/영어-한국어/${encodeURIComponent(currentCard.word)}`, '_blank');
   };

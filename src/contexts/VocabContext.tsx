@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
 import { VocabContextType } from "./types";
@@ -69,13 +68,11 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const nextCard = () => {
-    // Always reset the quiz result first to ensure clean state for next card
+    console.log("VocabContext - nextCard - Resetting quizResult");
     setQuizResult(null);
     
-    // Then reset the user answer
     resetUserAnswer();
     
-    // Finally move to the next card
     if (incompleteCards.length > 0) {
       setCurrentCardIndex(prev => (prev + 1) % incompleteCards.length);
     } else {
@@ -86,22 +83,18 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const checkAnswer = (userAnswer: string) => {
     if (!currentCard) return null;
     
-    // First reset any previous quiz result to ensure a clean state
     setQuizResult(null);
     
-    // Clean up user answer and get correct meanings
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const correctMeanings = currentCard.meaning
       .split(',')
       .map(meaning => meaning.trim().toLowerCase());
     
-    // Determine if answer is correct
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
     
-    console.log("Setting quiz result to:", result);
+    console.log("VocabContext - Setting quiz result to:", result);
     
-    // Set the result synchronously - removing the setTimeout to avoid race conditions
     setQuizResult(result);
     
     if (isCorrect) {

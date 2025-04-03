@@ -25,9 +25,15 @@ const QuizCard: React.FC = () => {
   const hasSubmittedAnswer = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Debug when quizResult changes
+  useEffect(() => {
+    console.log("QuizCard - quizResult changed:", quizResult);
+  }, [quizResult]);
+
   // Reset states when card changes
   useEffect(() => {
     if (currentCard) {
+      console.log("QuizCard - New card loaded, resetting states");
       // Important: Reset all states when a new card is shown
       setUserAnswer("");
       setShowAnswer(false);
@@ -43,7 +49,13 @@ const QuizCard: React.FC = () => {
 
   // Show feedback only after the user has submitted an answer and we have a result
   useEffect(() => {
+    console.log("QuizCard - Checking if should show answer:", {
+      quizResult,
+      hasSubmittedAnswer: hasSubmittedAnswer.current
+    });
+    
     if (quizResult !== null && hasSubmittedAnswer.current) {
+      console.log("QuizCard - Setting showAnswer to true");
       setShowAnswer(true);
     }
   }, [quizResult]);
@@ -71,6 +83,7 @@ const QuizCard: React.FC = () => {
     
     if (!userAnswer.trim()) return;
     
+    console.log("QuizCard - handleSubmit - Before setting hasSubmittedAnswer");
     // Set flag to indicate we've submitted an answer - this must happen BEFORE checking answer
     hasSubmittedAnswer.current = true;
     
@@ -80,9 +93,11 @@ const QuizCard: React.FC = () => {
     // Check the answer - this will update quizResult
     console.log("Submitting answer:", userAnswer);
     checkAnswer(userAnswer);
+    console.log("QuizCard - handleSubmit - After checkAnswer, hasSubmittedAnswer:", hasSubmittedAnswer.current);
   };
 
   const handleNext = () => {
+    console.log("QuizCard - handleNext - Resetting states");
     // Reset all local states first
     setShowAnswer(false);
     setUserAnswer("");
@@ -116,7 +131,7 @@ const QuizCard: React.FC = () => {
     ? formatExampleSentence(currentCard.exampleSentence, currentCard.word)
     : "";
 
-  console.log("Rendering state:", { 
+  console.log("QuizCard - Rendering state:", { 
     showAnswer, 
     quizResult, 
     hasSubmittedAnswer: hasSubmittedAnswer.current 
@@ -141,21 +156,25 @@ const QuizCard: React.FC = () => {
           inputRef={inputRef}
         />
         
-        {showAnswer && quizResult && hasSubmittedAnswer.current && (
-         <>
-          <p className="text-xs text-gray-400">
-            [debug] hasSubmittedAnswer: {String(hasSubmittedAnswer.current)} / quizResult: {quizResult}
-          </p>
-
-          <QuizFeedback
-            currentCard={currentCard}
-            quizResult={quizResult}
-            userAnswer={userAnswer}
-            attemptedRetry={attemptedRetry}
-            onRetry={handleRetry}
-            formattedSentence={formattedSentence}
-          />
-        </>
+        {/* Debug info for visibility conditions */}
+        <div className="text-xs text-gray-400">
+          Debug: showAnswer={String(showAnswer)}, 
+          quizResult={quizResult || "null"}, 
+          hasSubmittedAnswer={String(hasSubmittedAnswer.current)}
+        </div>
+        
+        {/* Try with less restrictive conditions temporarily to check rendering */}
+        {(showAnswer && quizResult) && (
+          <>
+            <QuizFeedback
+              currentCard={currentCard}
+              quizResult={quizResult}
+              userAnswer={userAnswer}
+              attemptedRetry={attemptedRetry}
+              onRetry={handleRetry}
+              formattedSentence={formattedSentence}
+            />
+          </>
         )}
       </CardContent>
       
