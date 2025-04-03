@@ -71,7 +71,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     resetUserAnswer();
     
-    // Reset quiz result first
+    // Explicitly set quiz result to null when moving to next card
     setQuizResult(null);
     
     if (incompleteCards.length > 0) {
@@ -87,7 +87,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Clear previous result first
     setQuizResult(null);
     
-    // Process the answer with a short delay to ensure state resets
+    // Process the answer with a slightly longer delay to ensure state updates properly
     setTimeout(() => {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const correctMeanings = currentCard.meaning
@@ -113,7 +113,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
         }
       }
-    }, 100); // Increased delay to ensure state updates properly
+    }, 150); // Increased delay for more reliable state updates
     
     return null;
   };

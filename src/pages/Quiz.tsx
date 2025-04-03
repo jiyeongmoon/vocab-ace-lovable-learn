@@ -6,7 +6,39 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BarChart3 } from "lucide-react";
 
-// Component to handle quiz statistics
+// Component moved inside the VocabProvider component to fix the context access issue
+const Quiz = () => {
+  const navigate = useNavigate();
+
+  return (
+    <VocabProvider>
+      <div className="min-h-screen bg-gray-50 py-6">
+        <div className="container max-w-5xl">
+          <div className="flex justify-between items-center mb-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => navigate("/")}
+              className="flex items-center"
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Dashboard
+            </Button>
+            <h1 className="text-2xl font-bold tracking-tight">Quiz Mode</h1>
+          </div>
+          
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2">
+              <QuizCard />
+            </div>
+            <QuizStatistics />
+          </div>
+        </div>
+      </div>
+    </VocabProvider>
+  );
+};
+
+// Component to handle quiz statistics - moved here inside the VocabProvider scope
 const QuizStatistics = () => {
   const { quizResult } = useVocab();
   const [correct, setCorrect] = useState(0);
@@ -59,37 +91,6 @@ const QuizStatistics = () => {
         </ul>
       </div>
     </div>
-  );
-};
-
-const Quiz = () => {
-  const navigate = useNavigate();
-
-  return (
-    <VocabProvider>
-      <div className="min-h-screen bg-gray-50 py-6">
-        <div className="container max-w-5xl">
-          <div className="flex justify-between items-center mb-6">
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate("/")}
-              className="flex items-center"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
-            <h1 className="text-2xl font-bold tracking-tight">Quiz Mode</h1>
-          </div>
-          
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2">
-              <QuizCard />
-            </div>
-            <QuizStatistics />
-          </div>
-        </div>
-      </div>
-    </VocabProvider>
   );
 };
 

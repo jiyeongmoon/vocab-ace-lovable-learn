@@ -33,10 +33,12 @@ const QuizCard: React.FC = () => {
     }
   }, [currentCard?.id]);
 
-  // This ensures the feedback shows up when quizResult changes
+  // This critical effect ensures the feedback shows up when quizResult changes
   useEffect(() => {
     console.log("quizResult changed:", quizResult, "answerSubmitted:", answerSubmitted.current);
-    if (quizResult !== null && answerSubmitted.current) {
+    if (quizResult !== null) {
+      // Show the answer when we get a result, regardless of answerSubmitted state
+      // This ensures feedback appears each time
       setShowAnswer(true);
     }
   }, [quizResult]);
