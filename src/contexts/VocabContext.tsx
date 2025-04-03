@@ -8,7 +8,9 @@ import {
   loadCardsFromStorage, 
   saveCardsToStorage,
   showToast,
-  generateExampleSentence as generateSentence
+  generateExampleSentence as generateSentence,
+  isOpenAIEnabled,
+  setOpenAIEnabled
 } from "./vocabUtils";
 
 const VocabContext = createContext<VocabContextType | undefined>(undefined);
@@ -19,6 +21,8 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [quizResult, setQuizResult] = useState<QuizResult>(null);
   const [quizMode, setQuizMode] = useState<boolean>(false);
   const [incompleteCards, setIncompleteCards] = useState<VocabularyCard[]>([]);
+  const [openAIEnabled, setOpenAIEnabledState] = useState<boolean>(isOpenAIEnabled());
+  const [openAIKey, setOpenAIKey] = useState<string>(localStorage.getItem("openai-api-key") || "");
   
   useEffect(() => {
     const loadedCards = loadCardsFromStorage();
@@ -108,6 +112,21 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return result;
   };
 
+  const toggleOpenAI = (enabled: boolean) => {
+    setOpenAIEnabledState(enabled);
+    setOpenAIEnabled(enabled);
+    showToast(
+      enabled ? "OpenAI Enabled" : "OpenAI Disabled", 
+      enabled ? "Now using AI for generating example sentences." : "Using simple placeholder sentences."
+    );
+  };
+
+  const updateOpenAIKey = (key: string) => {
+    setOpenAIKey(key);
+    localStorage.setItem("openai-api-key", key);
+    showToast("API Key Updated", "Your OpenAI API key has been saved.");
+  };
+
   const currentCard = incompleteCards.length > 0 ? incompleteCards[currentCardIndex] : null;
   const completedCards = cards.filter(card => card.completed);
 
@@ -126,7 +145,11 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     incompleteCards,
     completedCards,
     quizMode,
-    setQuizMode
+    setQuizMode,
+    openAIEnabled,
+    toggleOpenAI,
+    openAIKey,
+    updateOpenAIKey
   };
 
   return <VocabContext.Provider value={value}>{children}</VocabContext.Provider>;

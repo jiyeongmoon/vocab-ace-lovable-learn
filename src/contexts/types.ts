@@ -17,4 +17,8 @@ export interface VocabContextType {
   completedCards: VocabularyCard[];
   quizMode: boolean;
   setQuizMode: (mode: boolean) => void;
+  openAIEnabled: boolean;
+  toggleOpenAI: (enabled: boolean) => void;
+  openAIKey: string;
+  updateOpenAIKey: (key: string) => void;
 }
