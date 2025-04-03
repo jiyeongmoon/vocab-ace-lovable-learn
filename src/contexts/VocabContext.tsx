@@ -71,7 +71,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     resetUserAnswer();
     
-    // Always explicitly reset quiz result first before changing card
+    // Always reset quiz result when moving to next card
     setQuizResult(null);
     
     if (incompleteCards.length > 0) {
@@ -84,32 +84,38 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const checkAnswer = (userAnswer: string): QuizResult => {
     if (!currentCard) return null;
     
-    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
-    const correctMeanings = currentCard.meaning
-      .split(',')
-      .map(meaning => meaning.trim().toLowerCase());
+    // Reset the result first to ensure the UI updates even for consecutive answers
+    setQuizResult(null);
     
-    const isCorrect = correctMeanings.includes(normalizedUserAnswer);
-    const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
-    
-    console.log("checkAnswer setting quizResult to:", result);
-    setQuizResult(result);
-    
-    if (isCorrect) {
-      const newCorrectCount = currentCard.correctCount + 1;
-      const completed = newCorrectCount >= 10;
+    // Small delay to ensure state reset happens before setting new result
+    setTimeout(() => {
+      const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+      const correctMeanings = currentCard.meaning
+        .split(',')
+        .map(meaning => meaning.trim().toLowerCase());
       
-      updateCard(currentCard.id, { 
-        correctCount: newCorrectCount,
-        completed
-      });
+      const isCorrect = correctMeanings.includes(normalizedUserAnswer);
+      const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
       
-      if (completed) {
-        showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
+      console.log("checkAnswer setting quizResult to:", result);
+      setQuizResult(result);
+      
+      if (isCorrect) {
+        const newCorrectCount = currentCard.correctCount + 1;
+        const completed = newCorrectCount >= 10;
+        
+        updateCard(currentCard.id, { 
+          correctCount: newCorrectCount,
+          completed
+        });
+        
+        if (completed) {
+          showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
+        }
       }
-    }
+    }, 10);
     
-    return result;
+    return null; // No longer return immediately, let the async process handle it
   };
 
   const toggleOpenAI = (enabled: boolean) => {

@@ -79,12 +79,15 @@ const QuizCard: React.FC = () => {
     // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
     
-    // Use the context's checkAnswer function
+    // Use the context's checkAnswer function and always show feedback
     console.log("About to check answer, hasSubmittedAnswer:", hasSubmittedAnswer.current);
     checkAnswer(userAnswer);
   };
 
   const handleNext = () => {
+    // Force reset the state for the next card
+    hasSubmittedAnswer.current = false;
+    setShowAnswer(false);
     nextCard();
   };
 
