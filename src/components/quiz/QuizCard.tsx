@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useVocab } from "@/contexts/VocabContext";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "../../components/ui/card";
 import QuizFeedback from "./QuizFeedback";
 import QuizForm from "./QuizForm";
 import QuizCardEmpty from "./QuizCardEmpty";
@@ -145,7 +145,7 @@ const QuizCard: React.FC = () => {
          <>
           <p className="text-xs text-gray-400">
             [debug] hasSubmittedAnswer: {String(hasSubmittedAnswer.current)} / quizResult: {quizResult}
-         </p>
+          </p>
 
           <QuizFeedback
             currentCard={currentCard}
@@ -155,6 +155,7 @@ const QuizCard: React.FC = () => {
             onRetry={handleRetry}
             formattedSentence={formattedSentence}
           />
+        </>
         )}
       </CardContent>
       
