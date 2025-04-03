@@ -69,11 +69,13 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const nextCard = () => {
-    resetUserAnswer();
-    
-    // Explicitly set quiz result to null when moving to next card
+    // First clear the quiz result
     setQuizResult(null);
     
+    // Then reset the user answer
+    resetUserAnswer();
+    
+    // Finally move to the next card
     if (incompleteCards.length > 0) {
       setCurrentCardIndex(prev => (prev + 1) % incompleteCards.length);
     } else {
@@ -84,10 +86,10 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const checkAnswer = (userAnswer: string): QuizResult => {
     if (!currentCard) return null;
     
-    // Clear previous result first
+    // Make sure to clear the previous result first
     setQuizResult(null);
     
-    // Process the answer with a slightly longer delay to ensure state updates properly
+    // Process the answer with a delay to ensure state updates completely
     setTimeout(() => {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const correctMeanings = currentCard.meaning
@@ -113,7 +115,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
         }
       }
-    }, 150); // Increased delay for more reliable state updates
+    }, 200); // Increased delay to ensure state updates completely
     
     return null;
   };

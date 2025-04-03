@@ -22,6 +22,7 @@ const QuizCard: React.FC = () => {
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
   const answerSubmitted = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Reset states when card changes
   useEffect(() => {
@@ -30,15 +31,20 @@ const QuizCard: React.FC = () => {
       setAttemptedRetry(false);
       setShowAnswer(false);
       answerSubmitted.current = false;
+      
+      // Focus the input field when a new card is shown
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
     }
   }, [currentCard?.id]);
 
-  // This critical effect ensures the feedback shows up when quizResult changes
+  // This effect ensures the feedback shows up when quizResult changes
   useEffect(() => {
     console.log("quizResult changed:", quizResult, "answerSubmitted:", answerSubmitted.current);
-    if (quizResult !== null) {
-      // Show the answer when we get a result, regardless of answerSubmitted state
-      // This ensures feedback appears each time
+    
+    // Only show feedback if we have a result and the user has submitted an answer
+    if (quizResult !== null && answerSubmitted.current) {
       setShowAnswer(true);
     }
   }, [quizResult]);
@@ -102,6 +108,11 @@ const QuizCard: React.FC = () => {
     setShowAnswer(false);
     setAttemptedRetry(true);
     answerSubmitted.current = false;
+    
+    // Focus the input field when retrying
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
   };
 
   const openDictionary = () => {
@@ -168,6 +179,7 @@ const QuizCard: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Input
+              ref={inputRef}
               value={userAnswer}
               onChange={(e) => setUserAnswer(e.target.value)}
               placeholder="Type the meaning of this word"
