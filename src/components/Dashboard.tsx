@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useVocab } from "@/contexts/VocabContext";
 import { Button } from "@/components/ui/button";
@@ -26,7 +27,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 import CardForm from "./CardForm";
-import QuizCard from "./QuizCard";
+import QuizCard from "./quiz/QuizCard"; // Updated import path
 import WordList from "./WordList";
 import ExcelUpload from "./ExcelUpload";
 
