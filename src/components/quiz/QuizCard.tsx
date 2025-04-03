@@ -1,169 +1,171 @@
-// src/contexts/VocabContext.tsx
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { VocabularyCard, QuizResult } from "@/types/vocab";
-import { VocabContextType } from "./types";
-import {
-  LOCAL_STORAGE_KEY,
-  createNewCard,
-  loadCardsFromStorage,
-  saveCardsToStorage,
-  showToast,
-  generateExampleSentence as generateSentence,
-  isOpenAIEnabled,
-  setOpenAIEnabled,
-} from "./vocabUtils";
+import React, { useState, useEffect, useRef } from "react";
+import { useVocab } from "@/contexts/VocabContext";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import QuizFeedback from "./QuizFeedback";
+import QuizForm from "./QuizForm";
+import QuizCardEmpty from "./QuizCardEmpty";
+import QuizCardHeader from "./QuizCardHeader";
+import QuizCardFooter from "./QuizCardFooter";
 
-const VocabContext = createContext<VocabContextType | undefined>(undefined);
-
-export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cards, setCards] = useState<VocabularyCard[]>([]);
-  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
-  const [quizResult, setQuizResult] = useState<QuizResult>(null);
-  const [quizMode, setQuizMode] = useState<boolean>(false);
-  const [incompleteCards, setIncompleteCards] = useState<VocabularyCard[]>([]);
-  const [openAIEnabled, setOpenAIEnabledState] = useState<boolean>(isOpenAIEnabled());
-  const [openAIKey, setOpenAIKey] = useState<string>(localStorage.getItem("openai-api-key") || "");
-
-  useEffect(() => {
-    const loadedCards = loadCardsFromStorage();
-    setCards(loadedCards);
-  }, []);
-
-  useEffect(() => {
-    saveCardsToStorage(cards);
-  }, [cards]);
-
-  useEffect(() => {
-    const filtered = cards.filter((card) => !card.completed);
-    const shuffled = [...filtered].sort(() => Math.random() - 0.5);
-    setIncompleteCards(shuffled);
-  }, [cards]);
-
-  const addCard = (card: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">) => {
-    const newCard = createNewCard(card);
-    setCards((prev) => [...prev, newCard]);
-    showToast("Card Added", `Added "${card.word}" to your vocabulary list.`);
-  };
-
-  const addCards = (
-    cardsToAdd: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">[]
-  ) => {
-    const newCards = cardsToAdd.map((card) => createNewCard(card));
-    setCards((prev) => [...prev, ...newCards]);
-    showToast("Cards Added", `Added ${cardsToAdd.length} words to your vocabulary list.`);
-  };
-
-  const updateCard = (id: string, updatedFields: Partial<VocabularyCard>) => {
-    setCards((prev) => prev.map((card) => (card.id === id ? { ...card, ...updatedFields } : card)));
-  };
-
-  const deleteCard = (id: string) => {
-    setCards((prev) => prev.filter((card) => card.id !== id));
-    showToast("Card Deleted", "The vocabulary card has been removed.");
-  };
-
-  const resetUserAnswer = () => {
-    if (currentCard) {
-      updateCard(currentCard.id, { userAnswer: "" });
-    }
-  };
-
-  const nextCard = () => {
-    console.log("VocabContext - nextCard - Resetting quizResult first");
-
-    // ✅ FIRST: Reset result before card changes
-    setQuizResult(null);
-    resetUserAnswer();
-
-    if (incompleteCards.length > 0) {
-      setCurrentCardIndex((prev) => (prev + 1) % incompleteCards.length);
-    } else {
-      setCurrentCardIndex(0);
-    }
-  };
-
-  const checkAnswer = (userAnswer: string) => {
-    if (!currentCard) return null;
-
-    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
-    const correctMeanings = currentCard.meaning
-      .split(",")
-      .map((meaning) => meaning.trim().toLowerCase());
-
-    const isCorrect = correctMeanings.includes(normalizedUserAnswer);
-    const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
-
-    console.log("VocabContext - Setting quiz result to:", result);
-
-    setQuizResult(result);
-
-    if (isCorrect) {
-      const newCorrectCount = currentCard.correctCount + 1;
-      const completed = newCorrectCount >= 10;
-
-      updateCard(currentCard.id, {
-        correctCount: newCorrectCount,
-        completed,
-      });
-
-      if (completed) {
-        showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
-      }
-    }
-
-    return result;
-  };
-
-  const toggleOpenAI = (enabled: boolean) => {
-    setOpenAIEnabledState(enabled);
-    setOpenAIEnabled(enabled);
-    showToast(
-      enabled ? "OpenAI Enabled" : "OpenAI Disabled",
-      enabled
-        ? "Now using AI for generating example sentences."
-        : "Using simple placeholder sentences."
-    );
-  };
-
-  const updateOpenAIKey = (key: string) => {
-    setOpenAIKey(key);
-    localStorage.setItem("openai-api-key", key);
-    showToast("API Key Updated", "Your OpenAI API key has been saved.");
-  };
-
-  const currentCard = incompleteCards.length > 0 ? incompleteCards[currentCardIndex] : null;
-  const completedCards = cards.filter((card) => card.completed);
-
-  const value = {
-    cards,
-    addCard,
-    addCards,
+const QuizCard: React.FC = () => {
+  const { 
+    currentCard, 
+    nextCard, 
+    resetUserAnswer, 
     updateCard,
-    deleteCard,
-    currentCard,
-    nextCard,
-    checkAnswer,
-    quizResult,
-    resetUserAnswer,
-    generateExampleSentence: generateSentence,
     incompleteCards,
-    completedCards,
-    quizMode,
-    setQuizMode,
-    openAIEnabled,
-    toggleOpenAI,
-    openAIKey,
-    updateOpenAIKey,
+    checkAnswer,
+    quizResult
+  } = useVocab();
+  
+  const [userAnswer, setUserAnswer] = useState("");
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [attemptedRetry, setAttemptedRetry] = useState(false);
+  const hasSubmittedAnswer = useRef(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Reset states when card changes
+  useEffect(() => {
+    if (currentCard) {
+      // Important: Reset all states when a new card is shown
+      setUserAnswer("");
+      setShowAnswer(false);
+      setAttemptedRetry(false);
+      hasSubmittedAnswer.current = false;
+      
+      // Focus the input field when a new card is shown
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [currentCard?.id]);
+
+  // Show feedback only after the user has submitted an answer and we have a result
+  useEffect(() => {
+    if (quizResult !== null && hasSubmittedAnswer.current) {
+      setShowAnswer(true);
+    }
+  }, [quizResult]);
+
+  // Handle keydown for Enter key to move to next word
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Enter" && showAnswer) {
+        handleNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showAnswer]);
+
+  if (!currentCard) {
+    return <QuizCardEmpty />;
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!userAnswer.trim()) return;
+    
+    // Set flag to indicate we've submitted an answer - this must happen BEFORE checking answer
+    hasSubmittedAnswer.current = true;
+    
+    // Update the card with the user's answer
+    updateCard(currentCard.id, { userAnswer });
+    
+    // Check the answer - this will update quizResult
+    console.log("Submitting answer:", userAnswer);
+    checkAnswer(userAnswer);
   };
 
-  return <VocabContext.Provider value={value}>{children}</VocabContext.Provider>;
+  const handleNext = () => {
+    // Reset all local states first
+    setShowAnswer(false);
+    setUserAnswer("");
+    setAttemptedRetry(false);
+    hasSubmittedAnswer.current = false;
+    
+    // Then move to the next card (which will also reset the quizResult in the context)
+    nextCard();
+  };
+
+  const handleRetry = () => {
+    setUserAnswer("");
+    setShowAnswer(false);
+    setAttemptedRetry(true);
+    hasSubmittedAnswer.current = false;
+    
+    // Focus the input field when retrying
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 100);
+  };
+
+  const formatExampleSentence = (sentence: string, word: string) => {
+    if (!sentence) return "";
+    
+    const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+    return sentence.replace(regex, '**$1**');
+  };
+
+  const formattedSentence = currentCard.exampleSentence 
+    ? formatExampleSentence(currentCard.exampleSentence, currentCard.word)
+    : "";
+
+  console.log("Rendering state:", { 
+    showAnswer, 
+    quizResult, 
+    hasSubmittedAnswer: hasSubmittedAnswer.current 
+  });
+  
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <QuizCardHeader 
+          currentCard={currentCard}
+          formattedSentence={formattedSentence}
+          incompleteCards={incompleteCards}
+        />
+      </CardHeader>
+      
+      <CardContent className="space-y-6">
+        <QuizForm
+          userAnswer={userAnswer}
+          setUserAnswer={setUserAnswer}
+          onSubmit={handleSubmit}
+          showAnswer={showAnswer}
+          inputRef={inputRef}
+        />
+        
+        {showAnswer && quizResult && hasSubmittedAnswer.current && (
+         <>
+          <p className="text-xs text-gray-400">
+            [debug] hasSubmittedAnswer: {String(hasSubmittedAnswer.current)} / quizResult: {quizResult}
+          </p>
+
+          <QuizFeedback
+            currentCard={currentCard}
+            quizResult={quizResult}
+            userAnswer={userAnswer}
+            attemptedRetry={attemptedRetry}
+            onRetry={handleRetry}
+            formattedSentence={formattedSentence}
+          />
+         </>
+        )}
+      </CardContent>
+      
+      {showAnswer && (
+        <CardFooter>
+          <QuizCardFooter onNext={handleNext} quizResult={quizResult} />
+        </CardFooter>
+      )}
+    </Card>
+  );
 };
 
-export const useVocab = () => {
-  const context = useContext(VocabContext);
-  if (context === undefined) {
-    throw new Error("useVocab must be used within a VocabProvider");
-  }
-  return context;
-};
+export default QuizCard;
