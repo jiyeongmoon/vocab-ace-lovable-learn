@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { VocabProvider, useVocab } from "@/contexts/VocabContext";
-import QuizCard from "@/components/QuizCard";
+import QuizCard from "@/components/quiz/QuizCard";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BarChart3 } from "lucide-react";
