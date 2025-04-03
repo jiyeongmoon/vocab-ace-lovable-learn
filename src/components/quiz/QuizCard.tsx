@@ -142,6 +142,11 @@ const QuizCard: React.FC = () => {
         />
         
         {showAnswer && quizResult && hasSubmittedAnswer.current && (
+         <>
+          <p className="text-xs text-gray-400">
+            [debug] hasSubmittedAnswer: {String(hasSubmittedAnswer.current)} / quizResult: {quizResult}
+         </p>
+
           <QuizFeedback
             currentCard={currentCard}
             quizResult={quizResult}
