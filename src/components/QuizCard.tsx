@@ -39,12 +39,13 @@ const QuizCard: React.FC = () => {
     }
   }, [currentCard?.id]);
 
-  // This effect ensures the feedback shows up when quizResult changes
+  // Directly watch quizResult changes to show feedback
   useEffect(() => {
     console.log("quizResult changed:", quizResult, "answerSubmitted:", answerSubmitted.current);
     
-    // Only show feedback if we have a result and the user has submitted an answer
-    if (quizResult !== null && answerSubmitted.current) {
+    // Always show feedback if we have a result, regardless of answerSubmitted
+    // This is critical to ensure feedback always appears
+    if (quizResult !== null) {
       setShowAnswer(true);
     }
   }, [quizResult]);
@@ -81,13 +82,13 @@ const QuizCard: React.FC = () => {
     
     if (!userAnswer.trim()) return;
     
-    // Mark that we've submitted an answer this cycle
+    // Set flag to indicate we've submitted an answer
     answerSubmitted.current = true;
     
-    // Update the card with the user's answer
+    // Update the card with the user's answer and show feedback
     updateCard(currentCard.id, { userAnswer });
     
-    // Check the answer
+    // Check the answer - this will eventually update quizResult
     console.log("About to check answer, answerSubmitted:", answerSubmitted.current);
     checkAnswer(userAnswer);
   };

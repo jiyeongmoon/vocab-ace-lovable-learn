@@ -89,17 +89,21 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Make sure to clear the previous result first
     setQuizResult(null);
     
-    // Process the answer with a delay to ensure state updates completely
+    // Use a direct synchronous check for logging purposes
+    const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+    const correctMeanings = currentCard.meaning
+      .split(',')
+      .map(meaning => meaning.trim().toLowerCase());
+    
+    const isCorrect = correctMeanings.includes(normalizedUserAnswer);
+    const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
+    
+    console.log("CheckAnswer about to set quizResult to:", result);
+    
+    // Use a shorter delay to update the state more quickly
+    // This helps ensure the UI responds faster
     setTimeout(() => {
-      const normalizedUserAnswer = userAnswer.trim().toLowerCase();
-      const correctMeanings = currentCard.meaning
-        .split(',')
-        .map(meaning => meaning.trim().toLowerCase());
-      
-      const isCorrect = correctMeanings.includes(normalizedUserAnswer);
-      const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
-      
-      console.log("CheckAnswer setting quizResult to:", result);
+      console.log("Setting quiz result in timeout to:", result);
       setQuizResult(result);
       
       if (isCorrect) {
@@ -115,7 +119,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
         }
       }
-    }, 200); // Increased delay to ensure state updates completely
+    }, 50); // Using a shorter delay for more responsive feedback
     
     return null;
   };
