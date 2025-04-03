@@ -33,7 +33,7 @@ const QuizCard: React.FC = () => {
     }
   }, [currentCard?.id]);
 
-  // Handle quizResult changes
+  // Critical fix: Ensure showAnswer updates when quizResult changes
   useEffect(() => {
     console.log("quizResult changed:", quizResult, "hasSubmittedAnswer:", hasSubmittedAnswer.current);
     if (quizResult !== null && hasSubmittedAnswer.current) {
