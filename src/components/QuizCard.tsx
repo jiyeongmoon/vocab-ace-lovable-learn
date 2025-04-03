@@ -21,7 +21,7 @@ const QuizCard: React.FC = () => {
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
-  const hasSubmittedAnswer = useRef(false);
+  const answerSubmitted = useRef(false);
 
   // Reset states when card changes
   useEffect(() => {
@@ -29,14 +29,14 @@ const QuizCard: React.FC = () => {
       setUserAnswer("");
       setAttemptedRetry(false);
       setShowAnswer(false);
-      hasSubmittedAnswer.current = false;
+      answerSubmitted.current = false;
     }
   }, [currentCard?.id]);
 
-  // Critical fix: Ensure showAnswer updates when quizResult changes
+  // This ensures the feedback shows up when quizResult changes
   useEffect(() => {
-    console.log("quizResult changed:", quizResult, "hasSubmittedAnswer:", hasSubmittedAnswer.current);
-    if (quizResult !== null && hasSubmittedAnswer.current) {
+    console.log("quizResult changed:", quizResult, "answerSubmitted:", answerSubmitted.current);
+    if (quizResult !== null && answerSubmitted.current) {
       setShowAnswer(true);
     }
   }, [quizResult]);
@@ -74,22 +74,24 @@ const QuizCard: React.FC = () => {
     if (!userAnswer.trim()) return;
     
     // Mark that we've submitted an answer this cycle
-    hasSubmittedAnswer.current = true;
+    answerSubmitted.current = true;
     
     // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
     
-    // Use the context's checkAnswer function and always show feedback
-    console.log("About to check answer, hasSubmittedAnswer:", hasSubmittedAnswer.current);
+    // Check the answer
+    console.log("About to check answer, answerSubmitted:", answerSubmitted.current);
     checkAnswer(userAnswer);
   };
 
   const handleNext = () => {
-    // Force reset all state for the next card
-    hasSubmittedAnswer.current = false;
+    // Reset all local states first
     setShowAnswer(false);
     setUserAnswer("");
     setAttemptedRetry(false);
+    answerSubmitted.current = false;
+    
+    // Then move to the next card
     nextCard();
   };
 
@@ -97,7 +99,7 @@ const QuizCard: React.FC = () => {
     setUserAnswer("");
     setShowAnswer(false);
     setAttemptedRetry(true);
-    hasSubmittedAnswer.current = false;
+    answerSubmitted.current = false;
   };
 
   const openDictionary = () => {
@@ -123,7 +125,11 @@ const QuizCard: React.FC = () => {
     return currentCard.meaning.split(',').map(meaning => meaning.trim());
   };
 
-  console.log("Rendering state:", { showAnswer, quizResult, hasSubmittedAnswer: hasSubmittedAnswer.current });
+  console.log("Rendering state:", { 
+    showAnswer, 
+    quizResult, 
+    answerSubmitted: answerSubmitted.current 
+  });
   
   return (
     <Card className="w-full">

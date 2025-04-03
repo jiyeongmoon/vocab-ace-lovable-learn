@@ -71,7 +71,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     resetUserAnswer();
     
-    // Always reset quiz result when moving to next card
+    // Reset quiz result first
     setQuizResult(null);
     
     if (incompleteCards.length > 0) {
@@ -84,10 +84,10 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const checkAnswer = (userAnswer: string): QuizResult => {
     if (!currentCard) return null;
     
-    // Reset the result first to ensure the UI updates even for consecutive answers
+    // Clear previous result first
     setQuizResult(null);
     
-    // Small delay to ensure state reset happens before setting new result
+    // Process the answer with a short delay to ensure state resets
     setTimeout(() => {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const correctMeanings = currentCard.meaning
@@ -97,7 +97,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const isCorrect = correctMeanings.includes(normalizedUserAnswer);
       const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
       
-      console.log("checkAnswer setting quizResult to:", result);
+      console.log("CheckAnswer setting quizResult to:", result);
       setQuizResult(result);
       
       if (isCorrect) {
@@ -113,9 +113,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
         }
       }
-    }, 50); // Increased delay for better state management
+    }, 100); // Increased delay to ensure state updates properly
     
-    return null; // No longer return immediately, let the async process handle it
+    return null;
   };
 
   const toggleOpenAI = (enabled: boolean) => {

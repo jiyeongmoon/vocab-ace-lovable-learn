@@ -14,6 +14,7 @@ const QuizStatistics = () => {
 
   // Update stats when quiz result changes
   useEffect(() => {
+    console.log("QuizStatistics received quizResult:", quizResult);
     if (quizResult === "Correct") {
       setCorrect(prev => prev + 1);
       setTotal(prev => prev + 1);
