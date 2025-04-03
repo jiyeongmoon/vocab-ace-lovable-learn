@@ -1,10 +1,10 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
 import { VocabContextType } from "./types";
-import { 
-  LOCAL_STORAGE_KEY, 
-  createNewCard, 
-  loadCardsFromStorage, 
+import {
+  LOCAL_STORAGE_KEY,
+  createNewCard,
+  loadCardsFromStorage,
   saveCardsToStorage,
   showToast,
   generateExampleSentence as generateSentence,
@@ -22,7 +22,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [incompleteCards, setIncompleteCards] = useState<VocabularyCard[]>([]);
   const [openAIEnabled, setOpenAIEnabledState] = useState<boolean>(isOpenAIEnabled());
   const [openAIKey, setOpenAIKey] = useState<string>(localStorage.getItem("openai-api-key") || "");
-  
+
   useEffect(() => {
     const loadedCards = loadCardsFromStorage();
     setCards(loadedCards);
@@ -69,14 +69,10 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const nextCard = () => {
     console.log("VocabContext - nextCard - Resetting quizResult");
-  
-    // ✅ 1. 정답 피드백 상태를 먼저 지워줍니다!
+
     setQuizResult(null);
-  
-    // ✅ 2. 사용자 입력값 초기화
     resetUserAnswer();
-  
-    // ✅ 3. 다음 카드 인덱스 설정
+
     if (incompleteCards.length > 0) {
       setCurrentCardIndex(prev => (prev + 1) % incompleteCards.length);
     } else {
@@ -84,38 +80,37 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-
   const checkAnswer = (userAnswer: string) => {
     if (!currentCard) return null;
-    
+
     setQuizResult(null);
-    
+
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const correctMeanings = currentCard.meaning
       .split(',')
       .map(meaning => meaning.trim().toLowerCase());
-    
+
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
-    
+
     console.log("VocabContext - Setting quiz result to:", result);
-    
+
     setQuizResult(result);
-    
+
     if (isCorrect) {
       const newCorrectCount = currentCard.correctCount + 1;
       const completed = newCorrectCount >= 10;
-      
-      updateCard(currentCard.id, { 
+
+      updateCard(currentCard.id, {
         correctCount: newCorrectCount,
         completed
       });
-      
+
       if (completed) {
         showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
       }
     }
-    
+
     return null;
   };
 
@@ -123,7 +118,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setOpenAIEnabledState(enabled);
     setOpenAIEnabled(enabled);
     showToast(
-      enabled ? "OpenAI Enabled" : "OpenAI Disabled", 
+      enabled ? "OpenAI Enabled" : "OpenAI Disabled",
       enabled ? "Now using AI for generating example sentences." : "Using simple placeholder sentences."
     );
   };
