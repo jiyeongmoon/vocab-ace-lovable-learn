@@ -1,8 +1,7 @@
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
-import { useGoogleSheets } from "@/hooks/useGoogleSheets";
 
 interface QuizFeedbackProps {
   currentCard: VocabularyCard;
@@ -21,30 +20,12 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
   onRetry,
   formattedSentence,
 }) => {
-  const { isConfigured, submitQuizResult, submitting } = useGoogleSheets();
-  const [submitted, setSubmitted] = useState(false);
-
   // Ensure meaning is always an array for rendering
   const meaningArray = Array.isArray(currentCard.meaning)
     ? currentCard.meaning
     : typeof currentCard.meaning === 'string'
       ? (currentCard.meaning as unknown as string).split(',').map(m => m.trim())
       : [];
-  
-  // Submit quiz result to Google Sheets when result is available
-  useEffect(() => {
-    if (isConfigured && !submitted && quizResult && !submitting) {
-      const isCorrect = quizResult === "Correct";
-      submitQuizResult(
-        currentCard.word,
-        currentCard.meaning,
-        isCorrect,
-        userAnswer
-      ).then(() => {
-        setSubmitted(true);
-      });
-    }
-  }, [isConfigured, quizResult, submitted, submitting, currentCard, userAnswer, submitQuizResult]);
 
   return (
     <div
@@ -88,12 +69,6 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
               </Button>
             </div>
           )}
-        </div>
-      )}
-      
-      {isConfigured && submitted && (
-        <div className="mt-3 text-xs text-center text-slate-500">
-          Result saved to Google Sheets
         </div>
       )}
     </div>
