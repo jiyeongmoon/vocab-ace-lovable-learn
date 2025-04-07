@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Card,
@@ -74,7 +73,7 @@ const QuizCard: React.FC = () => {
               <div className="mt-2 p-3 bg-slate-50 border rounded-md border-slate-200 text-sm">
                 <p className="font-medium mb-1 text-slate-700">Correct Answer:</p>
                 <ul className="list-disc pl-5 space-y-1">
-                  {currentCard.meanings.map((meaning, index) => (
+                  {currentCard.meaning.map((meaning, index) => (
                     <li key={index} className="text-slate-900">{meaning}</li>
                   ))}
                 </ul>
