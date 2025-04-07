@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Card,
@@ -41,11 +42,17 @@ const QuizCard: React.FC = () => {
     ? formatExampleSentence(currentCard.exampleSentence, currentCard.word)
     : "";
   
+  // Ensure meaning is always treated as an array
+  const meaningArray = Array.isArray(currentCard.meaning)
+    ? currentCard.meaning
+    : currentCard.meaning.split(',').map(m => m.trim());
+  
   console.log("QuizCard - Rendering:", { 
     showAnswer, 
     quizResult, 
     hasSubmittedAnswer,
-    cardId: currentCard.id 
+    cardId: currentCard.id,
+    meaning: meaningArray
   });
   
   return (
@@ -73,7 +80,7 @@ const QuizCard: React.FC = () => {
               <div className="mt-2 p-3 bg-slate-50 border rounded-md border-slate-200 text-sm">
                 <p className="font-medium mb-1 text-slate-700">Correct Answer:</p>
                 <ul className="list-disc pl-5 space-y-1">
-                  {currentCard.meaning.map((meaning, index) => (
+                  {meaningArray.map((meaning, index) => (
                     <li key={index} className="text-slate-900">{meaning}</li>
                   ))}
                 </ul>

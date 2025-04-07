@@ -27,7 +27,20 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     const loadedCards = loadCardsFromStorage();
-    setCards(loadedCards);
+    
+    // Convert any string meanings to arrays for compatibility
+    const normalizedCards = loadedCards.map(card => {
+      if (typeof card.meaning === 'string') {
+        // Convert string to array of meanings
+        return {
+          ...card,
+          meaning: card.meaning.split(',').map(m => m.trim())
+        };
+      }
+      return card;
+    });
+    
+    setCards(normalizedCards);
   }, []);
 
   useEffect(() => {
@@ -41,18 +54,40 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [cards]);
 
   const addCard = (card: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">) => {
-    const newCard = createNewCard(card);
+    // Ensure meaning is always an array
+    const meaningArray = Array.isArray(card.meaning) 
+      ? card.meaning 
+      : card.meaning.split(',').map(m => m.trim());
+    
+    const newCard = createNewCard({
+      ...card,
+      meaning: meaningArray
+    });
+    
     setCards(prev => [...prev, newCard]);
     showToast("Card Added", `Added "${card.word}" to your vocabulary list.`);
   };
 
   const addCards = (cardsToAdd: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">[]) => {
-    const newCards = cardsToAdd.map(card => createNewCard(card));
+    // Ensure all meanings are arrays
+    const processedCards = cardsToAdd.map(card => ({
+      ...card,
+      meaning: Array.isArray(card.meaning) 
+        ? card.meaning 
+        : card.meaning.split(',').map(m => m.trim())
+    }));
+    
+    const newCards = processedCards.map(card => createNewCard(card));
     setCards(prev => [...prev, ...newCards]);
     showToast("Cards Added", `Added ${cardsToAdd.length} words to your vocabulary list.`);
   };
 
   const updateCard = (id: string, updatedFields: Partial<VocabularyCard>) => {
+    // If meaning is being updated and it's a string, convert to array
+    if (updatedFields.meaning && typeof updatedFields.meaning === 'string') {
+      updatedFields.meaning = updatedFields.meaning.split(',').map(m => m.trim());
+    }
+    
     setCards(prev => 
       prev.map(card => card.id === id ? { ...card, ...updatedFields } : card)
     );
@@ -90,9 +125,11 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (!currentCard) return null;
 
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
-    const correctMeanings = currentCard.meaning
-      .split(',')
-      .map(meaning => meaning.trim().toLowerCase());
+    
+    // Handle meaning whether it's a string or array
+    const correctMeanings = Array.isArray(currentCard.meaning) 
+      ? currentCard.meaning.map(m => m.toLowerCase().trim()) 
+      : currentCard.meaning.split(',').map(m => m.toLowerCase().trim());
 
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
