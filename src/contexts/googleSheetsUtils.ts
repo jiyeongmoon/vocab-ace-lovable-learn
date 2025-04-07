@@ -133,6 +133,11 @@ export const submitVocabWordToGoogleSheets = async (
     
     const responseData = await response.json();
     
+    // Log debug information if available
+    if (responseData.debug) {
+      console.log("Google Sheets response debug info:", responseData.debug);
+    }
+    
     if (responseData.success) {
       showToast("Success", `Vocabulary word "${vocabWord.word}" saved to Google Sheets`);
       return true;

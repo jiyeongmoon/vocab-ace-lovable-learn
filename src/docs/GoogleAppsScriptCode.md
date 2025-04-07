@@ -32,8 +32,11 @@ function doPost(e) {
     
     // Get or create the sheet
     let sheet = ss.getSheetByName(sheetName);
+    let isNewSheet = false;
+    
     if (!sheet) {
       sheet = ss.insertSheet(sheetName);
+      isNewSheet = true;
       // Add headers if this is a new sheet
       sheet.appendRow([
         "Word", 
@@ -41,6 +44,48 @@ function doPost(e) {
         "Example Sentence",
         "Date Added"
       ]);
+    } else if (!isNewSheet) {
+      // Check if the sheet has the required headers
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      
+      // Debug log to see what headers were detected
+      console.log("Detected headers in sheet: " + JSON.stringify(headers));
+      
+      // Normalize headers for comparison (trim whitespace and convert to lowercase)
+      const normalizedHeaders = headers.map(header => 
+        header ? String(header).trim().toLowerCase() : ""
+      );
+      
+      console.log("Normalized headers: " + JSON.stringify(normalizedHeaders));
+      
+      // Check if required headers exist (case-insensitive, ignoring whitespace)
+      const hasWordColumn = normalizedHeaders.some(h => h === "word");
+      const hasMeaningColumn = normalizedHeaders.some(h => h === "meaning");
+      
+      // If headers are missing, add them
+      if (!hasWordColumn || !hasMeaningColumn) {
+        console.log("Required headers missing. Word exists: " + hasWordColumn + ", Meaning exists: " + hasMeaningColumn);
+        
+        // Find the last used row to determine if we need to add headers to an empty sheet
+        // or if we need to create a new row for headers
+        const lastRow = sheet.getLastRow();
+        
+        if (lastRow === 0) {
+          // Sheet is empty, add headers
+          sheet.appendRow([
+            "Word", 
+            "Meaning", 
+            "Example Sentence",
+            "Date Added"
+          ]);
+        } else {
+          // Sheet has data but missing headers - prepend headers row
+          sheet.insertRowBefore(1);
+          sheet.getRange(1, 1, 1, 4).setValues([
+            ["Word", "Meaning", "Example Sentence", "Date Added"]
+          ]);
+        }
+      }
     }
     
     // Format date for better readability
@@ -51,18 +96,54 @@ function doPost(e) {
       "yyyy-MM-dd HH:mm:ss"
     );
     
+    // Find column indices based on normalized header names
+    const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+    const normalizedHeaders = headerRow.map(header => 
+      header ? String(header).trim().toLowerCase() : ""
+    );
+    
+    // Find column indices (0-based)
+    const wordColIndex = normalizedHeaders.findIndex(h => h === "word");
+    const meaningColIndex = normalizedHeaders.findIndex(h => h === "meaning");
+    const exampleColIndex = normalizedHeaders.findIndex(h => 
+      h === "example sentence" || h === "example" || h === "examples" || h === "sentence"
+    );
+    const dateColIndex = normalizedHeaders.findIndex(h => 
+      h === "date added" || h === "date" || h === "added date" || h === "added"
+    );
+    
+    // Prepare the row data (mapping to the correct columns)
+    const rowData = [];
+    
+    // Ensure array has enough elements for the largest index
+    const maxIndex = Math.max(wordColIndex, meaningColIndex, exampleColIndex, dateColIndex);
+    for (let i = 0; i <= maxIndex; i++) {
+      rowData[i] = "";  // Fill with empty strings initially
+    }
+    
+    // Set values in the appropriate columns
+    if (wordColIndex >= 0) rowData[wordColIndex] = payload.word;
+    if (meaningColIndex >= 0) rowData[meaningColIndex] = payload.meaning;
+    if (exampleColIndex >= 0) rowData[exampleColIndex] = payload.example;
+    if (dateColIndex >= 0) rowData[dateColIndex] = formattedDate;
+    
     // Append the data to the sheet
-    sheet.appendRow([
-      payload.word,
-      payload.meaning,
-      payload.example,
-      formattedDate
-    ]);
+    sheet.appendRow(rowData);
     
     // Return success response
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
-      message: "Vocabulary added successfully"
+      message: "Vocabulary added successfully",
+      debug: {
+        detectedHeaders: headerRow,
+        normalizedHeaders: normalizedHeaders,
+        columnIndices: {
+          word: wordColIndex,
+          meaning: meaningColIndex,
+          example: exampleColIndex,
+          date: dateColIndex
+        }
+      }
     }))
     .setMimeType(ContentService.MimeType.JSON)
     .setHeaders(headers);
@@ -76,7 +157,8 @@ function doPost(e) {
     
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
-      error: error.message
+      error: error.message,
+      stack: error.stack
     }))
     .setMimeType(ContentService.MimeType.JSON)
     .setHeaders(headers);
@@ -134,6 +216,8 @@ This ensures the script has access to your vocabulary spreadsheet.
 - The script will create sheets with names provided in requests
 - Each sheet has headers: Word, Meaning, Example Sentence, Date Added
 - The Date Added column is formatted for easier reading
+- Headers are normalized (case-insensitive, whitespace trimmed)
+- Debug information is included in the response to help troubleshoot header issues
 
 ## Troubleshooting
 
