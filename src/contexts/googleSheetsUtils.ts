@@ -22,6 +22,15 @@ export interface QuizResultSubmission {
 }
 
 /**
+ * Data structure for vocabulary word submission
+ */
+export interface VocabWordSubmission {
+  word: string;
+  meaning: string;
+  example: string;
+}
+
+/**
  * Save the Google Sheets deployment URL to localStorage
  */
 export const saveGoogleSheetsConfig = (config: GoogleSheetsConfig): void => {
@@ -80,6 +89,59 @@ export const submitQuizResultToGoogleSheets = async (
     }
   } catch (error) {
     console.error("Error submitting quiz result to Google Sheets:", error);
+    showToast("Error", "Failed to connect to Google Sheets");
+    return false;
+  }
+};
+
+/**
+ * Submits a vocabulary word to Google Sheets via Google Apps Script
+ * 
+ * @param vocabWord The vocabulary word data to submit
+ * @param customSheetName Optional custom sheet name (overrides default)
+ * @returns Promise that resolves to a boolean indicating success
+ */
+export const submitVocabWordToGoogleSheets = async (
+  vocabWord: VocabWordSubmission,
+  customSheetName?: string
+): Promise<boolean> => {
+  const config = getGoogleSheetsConfig();
+  
+  if (!config || !config.deploymentUrl) {
+    console.error("Google Sheets is not configured");
+    return false;
+  }
+  
+  try {
+    const response = await fetch(config.deploymentUrl, {
+      method: "POST",
+      mode: "cors",
+      headers: {
+        "Content-Type": "text/plain" // Using text/plain to avoid CORS preflight requests
+      },
+      body: JSON.stringify({
+        sheetName: customSheetName || config.sheetName,
+        word: vocabWord.word,
+        meaning: vocabWord.meaning,
+        example: vocabWord.example
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    
+    const responseData = await response.json();
+    
+    if (responseData.success) {
+      showToast("Success", `Vocabulary word "${vocabWord.word}" saved to Google Sheets`);
+      return true;
+    } else {
+      showToast("Error", responseData.error || "Failed to save to Google Sheets");
+      return false;
+    }
+  } catch (error) {
+    console.error("Error submitting vocabulary to Google Sheets:", error);
     showToast("Error", "Failed to connect to Google Sheets");
     return false;
   }

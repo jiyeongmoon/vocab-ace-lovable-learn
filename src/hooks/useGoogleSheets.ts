@@ -6,7 +6,9 @@ import {
   saveGoogleSheetsConfig,
   getGoogleSheetsConfig,
   isGoogleSheetsConfigured,
-  QuizResultSubmission
+  QuizResultSubmission,
+  submitVocabWordToGoogleSheets,
+  VocabWordSubmission
 } from "@/contexts/googleSheetsUtils";
 import { showToast } from "@/contexts/vocabUtils";
 
@@ -14,6 +16,7 @@ export interface UseGoogleSheetsReturn {
   isConfigured: boolean;
   configureGoogleSheets: (deploymentUrl: string, sheetName: string) => void;
   submitQuizResult: (word: string, meaning: string | string[], isCorrect: boolean, userAnswer: string) => Promise<boolean>;
+  submitVocabWord: (word: string, meaning: string, example: string, sheetName?: string) => Promise<boolean>;
   getConfig: () => { deploymentUrl: string; sheetName: string } | null;
   submitting: boolean;
 }
@@ -62,6 +65,37 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     }
   };
   
+  const submitVocabWord = async (
+    word: string,
+    meaning: string,
+    example: string,
+    sheetName?: string
+  ): Promise<boolean> => {
+    if (!isGoogleSheetsConfigured()) {
+      showToast("Error", "Google Sheets is not configured");
+      return false;
+    }
+    
+    setSubmitting(true);
+    
+    try {
+      const vocabSubmission: VocabWordSubmission = {
+        word,
+        meaning,
+        example
+      };
+      
+      const result = await submitVocabWordToGoogleSheets(vocabSubmission, sheetName);
+      return result;
+    } catch (error) {
+      console.error("Error submitting vocabulary word:", error);
+      showToast("Error", "Failed to submit vocabulary word");
+      return false;
+    } finally {
+      setSubmitting(false);
+    }
+  };
+  
   const getConfig = () => {
     return getGoogleSheetsConfig();
   };
@@ -70,6 +104,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     isConfigured: isGoogleSheetsConfigured(),
     configureGoogleSheets,
     submitQuizResult,
+    submitVocabWord,
     getConfig,
     submitting
   };

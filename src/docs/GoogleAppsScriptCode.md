@@ -1,4 +1,5 @@
 
+
 # Google Apps Script Code for Vocab Ace
 
 Copy and paste this code into a new Google Apps Script project in your Google Drive.
@@ -6,7 +7,7 @@ Copy and paste this code into a new Google Apps Script project in your Google Dr
 ```javascript
 /**
  * Handles POST requests to the web app.
- * Appends data to a specified sheet in the spreadsheet.
+ * Appends vocabulary data to a specified sheet in the spreadsheet.
  * 
  * @param {Object} e - The event object containing the request parameters
  * @return {Object} JSON response with success status and message
@@ -28,7 +29,7 @@ function doPost(e) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     
     // Get the sheet name from the payload, or use a default
-    const sheetName = payload.sheetName || "QuizResults";
+    const sheetName = payload.sheetName || "VocabWords";
     
     // Get or create the sheet
     let sheet = ss.getSheetByName(sheetName);
@@ -38,21 +39,13 @@ function doPost(e) {
       sheet.appendRow([
         "Word", 
         "Meaning", 
-        "Is Correct", 
-        "User Answer", 
-        "Timestamp", 
-        "Date"
+        "Example Sentence",
+        "Date Added"
       ]);
     }
     
-    // Get the data to append
-    const data = payload.data;
-    if (!data) {
-      throw new Error("No data provided");
-    }
-    
     // Format date for better readability
-    const timestamp = new Date(data.timestamp);
+    const timestamp = new Date();
     const formattedDate = Utilities.formatDate(
       timestamp, 
       SpreadsheetApp.getActive().getSpreadsheetTimeZone(), 
@@ -61,18 +54,16 @@ function doPost(e) {
     
     // Append the data to the sheet
     sheet.appendRow([
-      data.word,
-      data.meaning,
-      data.isCorrect,
-      data.userAnswer,
-      data.timestamp,
+      payload.word,
+      payload.meaning,
+      payload.example,
       formattedDate
     ]);
     
     // Return success response
     return ContentService.createTextOutput(JSON.stringify({
       success: true,
-      message: "Data added successfully"
+      message: "Vocabulary added successfully"
     }))
     .setMimeType(ContentService.MimeType.JSON)
     .setHeaders(headers);
@@ -131,7 +122,7 @@ function doGet(e) {
 
 ## Spreadsheet Setup
 
-Make sure your Google Apps Script is attached to the spreadsheet where you want to store the results:
+Make sure your Google Apps Script is attached to the spreadsheet where you want to store the vocabulary:
 
 1. Open your vocabulary spreadsheet
 2. Go to Extensions > Apps Script
@@ -142,8 +133,8 @@ This ensures the script has access to your vocabulary spreadsheet.
 ## Usage Notes
 
 - The script will create sheets with names provided in requests
-- Each sheet has headers: Word, Meaning, Is Correct, User Answer, Timestamp, Date
-- The Date column is formatted for easier reading
+- Each sheet has headers: Word, Meaning, Example Sentence, Date Added
+- The Date Added column is formatted for easier reading
 
 ## Troubleshooting
 
@@ -151,3 +142,4 @@ If you encounter CORS errors:
 1. Make sure you deployed with "Anyone" access
 2. Try redeploying the script
 3. Check your browser console for specific error messages
+
