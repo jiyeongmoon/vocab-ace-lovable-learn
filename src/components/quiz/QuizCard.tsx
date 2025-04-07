@@ -14,8 +14,9 @@ import QuizCardFooter from "./QuizCardFooter";
 import QuizDebugPanel from "./QuizDebugPanel";
 import { useQuizCard } from "@/hooks/useQuizCard";
 import { Eye } from "lucide-react";
+import { VocabProvider } from "@/contexts/VocabContext";
 
-const QuizCard: React.FC = () => {
+const QuizCardContent: React.FC = () => {
   const {
     currentCard,
     userAnswer,
@@ -45,15 +46,9 @@ const QuizCard: React.FC = () => {
   // Ensure meaning is always treated as an array
   const meaningArray = Array.isArray(currentCard.meaning)
     ? currentCard.meaning
-    : currentCard.meaning.split(',').map(m => m.trim());
-  
-  console.log("QuizCard - Rendering:", { 
-    showAnswer, 
-    quizResult, 
-    hasSubmittedAnswer,
-    cardId: currentCard.id,
-    meaning: meaningArray
-  });
+    : typeof currentCard.meaning === 'string'
+      ? currentCard.meaning.split(',').map(m => m.trim())
+      : [];
   
   return (
     <Card className="w-full">
@@ -122,6 +117,15 @@ const QuizCard: React.FC = () => {
         </CardFooter>
       )}
     </Card>
+  );
+};
+
+// This wrapper component provides the VocabProvider context
+const QuizCard: React.FC = () => {
+  return (
+    <VocabProvider>
+      <QuizCardContent />
+    </VocabProvider>
   );
 };
 

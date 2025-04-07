@@ -2,7 +2,7 @@
 export interface VocabularyCard {
   id: string;
   word: string;
-  meaning: string[];  // Change from string to string[]
+  meaning: string[];
   exampleSentence: string;
   correctCount: number;
   completed: boolean;

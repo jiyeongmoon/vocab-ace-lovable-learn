@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard } from "@/types/vocab";
 import { VocabContextType, QuizResult } from "./types";
@@ -57,7 +56,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Ensure meaning is always an array
     const meaningArray = Array.isArray(card.meaning) 
       ? card.meaning 
-      : card.meaning.split(',').map(m => m.trim());
+      : typeof card.meaning === 'string'
+        ? card.meaning.split(',').map(m => m.trim())
+        : [];
     
     const newCard = createNewCard({
       ...card,
@@ -74,7 +75,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ...card,
       meaning: Array.isArray(card.meaning) 
         ? card.meaning 
-        : card.meaning.split(',').map(m => m.trim())
+        : typeof card.meaning === 'string'
+          ? card.meaning.split(',').map(m => m.trim())
+          : []
     }));
     
     const newCards = processedCards.map(card => createNewCard(card));
@@ -84,8 +87,12 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const updateCard = (id: string, updatedFields: Partial<VocabularyCard>) => {
     // If meaning is being updated and it's a string, convert to array
-    if (updatedFields.meaning && typeof updatedFields.meaning === 'string') {
-      updatedFields.meaning = updatedFields.meaning.split(',').map(m => m.trim());
+    if (updatedFields.meaning !== undefined) {
+      updatedFields.meaning = Array.isArray(updatedFields.meaning)
+        ? updatedFields.meaning
+        : typeof updatedFields.meaning === 'string'
+          ? updatedFields.meaning.split(',').map(m => m.trim())
+          : [];
     }
     
     setCards(prev => 
@@ -129,7 +136,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Handle meaning whether it's a string or array
     const correctMeanings = Array.isArray(currentCard.meaning) 
       ? currentCard.meaning.map(m => m.toLowerCase().trim()) 
-      : currentCard.meaning.split(',').map(m => m.toLowerCase().trim());
+      : typeof currentCard.meaning === 'string'
+        ? currentCard.meaning.split(',').map(m => m.toLowerCase().trim()) 
+        : [];
 
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
