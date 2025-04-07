@@ -49,7 +49,9 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     setSubmitting(true);
     
     try {
-      const submission = createQuizResultSubmission(word, meaning, isCorrect, userAnswer);
+      // Convert meaning to string if it's an array to match the expected type
+      const meaningAsString = Array.isArray(meaning) ? meaning.join(", ") : meaning;
+      const submission = createQuizResultSubmission(word, meaningAsString, isCorrect, userAnswer);
       const result = await submitQuizResultToGoogleSheets(submission);
       return result;
     } catch (error) {
