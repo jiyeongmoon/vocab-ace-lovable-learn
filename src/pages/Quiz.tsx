@@ -40,20 +40,26 @@ const Quiz = () => {
 
 // Component to handle quiz statistics - moved here inside the VocabProvider scope
 const QuizStatistics = () => {
-  const { quizResult } = useVocab();
+  const { quizResultMap } = useVocab();
   const [correct, setCorrect] = useState(0);
   const [total, setTotal] = useState(0);
 
-  // Update stats when quiz result changes
+  // Update stats when quiz result map changes
   useEffect(() => {
-    console.log("QuizStatistics received quizResult:", quizResult);
-    if (quizResult === "Correct") {
-      setCorrect(prev => prev + 1);
-      setTotal(prev => prev + 1);
-    } else if (quizResult === "Incorrect") {
-      setTotal(prev => prev + 1);
-    }
-  }, [quizResult]);
+    // Check if there's a new result in the map
+    const results = Object.values(quizResultMap);
+    if (results.length === 0) return;
+    
+    // Count the results for statistics
+    const correctCount = results.filter(result => result === "Correct").length;
+    const totalCount = results.length;
+    
+    setCorrect(correctCount);
+    setTotal(totalCount);
+    
+    console.log("QuizStatistics updated based on quizResultMap:", 
+      { map: quizResultMap, correct: correctCount, total: totalCount });
+  }, [quizResultMap]);
 
   return (
     <div className="space-y-6">
