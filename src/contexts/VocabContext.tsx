@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard } from "@/types/vocab";
 import { VocabContextType, QuizResult } from "./types";
@@ -72,8 +73,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     console.log("VocabContext - nextCard - Current card ID:", currentCard?.id);
     
-    // Don't reset quizResultMap here - we want to preserve it for the next render
-    // We'll clear the specific result when needed
+    // IMPORTANT: The quiz result for the current card will be preserved until 
+    // clearCurrentQuizResult is explicitly called (which should happen when the user moves to a new card)
+    // This ensures the feedback is shown for the current card before moving to the next
     
     resetUserAnswer();
 
@@ -84,6 +86,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  // This should be called after a user sees feedback and clicks "Next"
   const clearCurrentQuizResult = () => {
     if (currentCard) {
       console.log("VocabContext - clearCurrentQuizResult - Clearing result for card:", currentCard.id);

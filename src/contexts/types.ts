@@ -1,8 +1,10 @@
 
 import { VocabularyCard } from "@/types/vocab";
-import { QuizResultMap } from "./VocabContext";
 
 export type QuizResult = "Correct" | "Incorrect" | null;
+
+// Map of card IDs to quiz results
+export type QuizResultMap = Record<string, QuizResult>;
 
 export interface VocabContextType {
   cards: VocabularyCard[];
