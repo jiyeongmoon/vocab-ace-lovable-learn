@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard } from "@/types/vocab";
 import { VocabContextType, QuizResult } from "./types";
@@ -148,16 +149,21 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Update the quiz result
     setQuizResult(result);
 
+    // Always save the user's answer in the card
+    updateCard(currentCard.id, { userAnswer });
+
     // Update session statistics
     setSessionStats(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1
     }));
 
+    // If the answer is correct, update the card's correctCount and check if completed
     if (isCorrect) {
       const newCorrectCount = currentCard.correctCount + 1;
       const completed = newCorrectCount >= 10;
 
+      // Update the card with new correctCount and completed status
       updateCard(currentCard.id, {
         correctCount: newCorrectCount,
         completed
