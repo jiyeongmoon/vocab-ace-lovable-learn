@@ -2,12 +2,10 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, BarChart3 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import QuizCard from "@/components/quiz/QuizCard";
-import QuizStatistics from "@/components/quiz/QuizStatistics";
-import { VocabProvider, useVocab } from "@/contexts/VocabContext";
+import { VocabProvider } from "@/contexts/VocabContext";
 
-// Main Quiz page with its own VocabProvider
 const Quiz = () => {
   const navigate = useNavigate();
 
@@ -32,9 +30,7 @@ const Quiz = () => {
               <QuizCard />
             </div>
             <div>
-              <QuizStatistics />
-              
-              <div className="mt-6 bg-white p-6 rounded-lg border shadow-sm">
+              <div className="bg-white p-6 rounded-lg border shadow-sm">
                 <h3 className="text-lg font-semibold mb-3">Quiz Tips</h3>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li>• If English - type Korean Meaning</li>
