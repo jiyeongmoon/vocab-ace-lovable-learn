@@ -47,7 +47,7 @@ const QuizCardContent: React.FC = () => {
   const meaningArray = Array.isArray(currentCard.meaning)
     ? currentCard.meaning
     : typeof currentCard.meaning === 'string'
-      ? currentCard.meaning.split(',').map(m => m.trim())
+      ? (currentCard.meaning as unknown as string).split(',').map(m => m.trim())
       : [];
   
   return (

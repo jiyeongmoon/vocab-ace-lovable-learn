@@ -83,7 +83,8 @@ const ExcelUpload: React.FC = () => {
         .filter((row: any) => row.Word && row.Meaning)
         .map((row: any) => ({
           word: String(row.Word).trim(),
-          meaning: String(row.Meaning).trim(),
+          // Convert meaning to array
+          meaning: String(row.Meaning).trim().split(',').map((m: string) => m.trim()),
           exampleSentence: row.Example || row["Example Sentence"] || "",
           userAnswer: ""
         }));
@@ -104,7 +105,7 @@ const ExcelUpload: React.FC = () => {
       clearFile();
       
     } catch (error) {
-      console.error("Error processing file:", error);
+      console.error("Failed to process file:", error);
       toast({
         title: "Import Failed",
         description: "Failed to process the file. Please check the format and try again.",

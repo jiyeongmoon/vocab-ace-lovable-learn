@@ -32,9 +32,12 @@ const CardForm: React.FC = () => {
     
     if (!word.trim() || !meaning.trim()) return;
     
+    // Convert comma-separated meaning string to array
+    const meaningArray = meaning.split(',').map(m => m.trim());
+    
     addCard({
       word: word.trim(),
-      meaning: meaning.trim(),
+      meaning: meaningArray,
       exampleSentence: exampleSentence.trim(),
       userAnswer: ""
     });

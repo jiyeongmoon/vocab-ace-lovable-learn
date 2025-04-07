@@ -33,7 +33,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Convert string to array of meanings
         return {
           ...card,
-          meaning: card.meaning.split(',').map(m => m.trim())
+          meaning: (card.meaning as unknown as string).split(',').map(m => m.trim())
         };
       }
       return card;
@@ -57,7 +57,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const meaningArray = Array.isArray(card.meaning) 
       ? card.meaning 
       : typeof card.meaning === 'string'
-        ? card.meaning.split(',').map(m => m.trim())
+        ? (card.meaning as unknown as string).split(',').map(m => m.trim())
         : [];
     
     const newCard = createNewCard({
@@ -76,7 +76,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       meaning: Array.isArray(card.meaning) 
         ? card.meaning 
         : typeof card.meaning === 'string'
-          ? card.meaning.split(',').map(m => m.trim())
+          ? (card.meaning as unknown as string).split(',').map(m => m.trim())
           : []
     }));
     
@@ -91,7 +91,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updatedFields.meaning = Array.isArray(updatedFields.meaning)
         ? updatedFields.meaning
         : typeof updatedFields.meaning === 'string'
-          ? updatedFields.meaning.split(',').map(m => m.trim())
+          ? (updatedFields.meaning as unknown as string).split(',').map(m => m.trim())
           : [];
     }
     
@@ -137,7 +137,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const correctMeanings = Array.isArray(currentCard.meaning) 
       ? currentCard.meaning.map(m => m.toLowerCase().trim()) 
       : typeof currentCard.meaning === 'string'
-        ? currentCard.meaning.split(',').map(m => m.toLowerCase().trim()) 
+        ? (currentCard.meaning as unknown as string).split(',').map(m => m.toLowerCase().trim()) 
         : [];
 
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
