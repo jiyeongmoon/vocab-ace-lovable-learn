@@ -22,6 +22,13 @@ export function useQuizCard() {
   const inputRef = useRef<HTMLInputElement>(null);
   const currentCardRef = useRef<string | null>(null);
 
+  // Track the current card ID to detect card changes
+  useEffect(() => {
+    if (currentCard?.id) {
+      currentCardRef.current = currentCard.id;
+    }
+  }, [currentCard?.id]);
+
   // Reset states when card changes
   useEffect(() => {
     if (currentCard) {
@@ -97,11 +104,14 @@ export function useQuizCard() {
     setAttemptedRetry(false);
     hasSubmittedAnswer.current = false;
     
-    // Clear the result for the current card before moving to the next
-    clearCurrentQuizResult();
-    
     // Then move to the next card
     nextCard();
+    
+    // Clear the result for the current card AFTER moving to the next card
+    // This ensures the feedback is properly displayed before clearing
+    setTimeout(() => {
+      clearCurrentQuizResult();
+    }, 0);
   };
 
   const handleRetry = () => {
