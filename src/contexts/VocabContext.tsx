@@ -13,14 +13,12 @@ import {
   setOpenAIEnabled
 } from "./vocabUtils";
 
-export type QuizResultMap = Record<string, QuizResult>;
-
 const VocabContext = createContext<VocabContextType | undefined>(undefined);
 
 export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cards, setCards] = useState<VocabularyCard[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState<number>(0);
-  const [quizResultMap, setQuizResultMap] = useState<QuizResultMap>({});
+  const [quizResult, setQuizResult] = useState<QuizResult>(null);
   const [quizMode, setQuizMode] = useState<boolean>(false);
   const [incompleteCards, setIncompleteCards] = useState<VocabularyCard[]>([]);
   const [openAIEnabled, setOpenAIEnabledState] = useState<boolean>(isOpenAIEnabled());
@@ -73,32 +71,21 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     console.log("VocabContext - nextCard - Current card ID:", currentCard?.id);
     
-    // IMPORTANT: The quiz result for the current card will be preserved until 
-    // clearCurrentQuizResult is explicitly called (which should happen when the user moves to a new card)
-    // This ensures the feedback is shown for the current card before moving to the next
-    
+    // Reset user answer
     resetUserAnswer();
-
+    
+    // Move to next card
     if (incompleteCards.length > 0) {
       setCurrentCardIndex(prev => (prev + 1) % incompleteCards.length);
+      
+      // Reset quiz result after changing the card
+      setQuizResult(null);
     } else {
       setCurrentCardIndex(0);
     }
   };
 
-  // This should be called after a user sees feedback and clicks "Next"
-  const clearCurrentQuizResult = () => {
-    if (currentCard) {
-      console.log("VocabContext - clearCurrentQuizResult - Clearing result for card:", currentCard.id);
-      setQuizResultMap(prev => {
-        const updated = { ...prev };
-        delete updated[currentCard.id];
-        return updated;
-      });
-    }
-  };
-
-  const checkAnswer = (userAnswer: string): QuizResult | null => {
+  const checkAnswer = (userAnswer: string): QuizResult => {
     if (!currentCard) return null;
 
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
@@ -111,11 +98,8 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     console.log("VocabContext - Setting quiz result to:", result, "for card:", currentCard.id);
 
-    // Update the quiz result map with the current card's result
-    setQuizResultMap(prev => ({
-      ...prev,
-      [currentCard.id]: result,
-    }));
+    // Update the quiz result
+    setQuizResult(result);
 
     if (isCorrect) {
       const newCorrectCount = currentCard.correctCount + 1;
@@ -161,8 +145,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentCard,
     nextCard,
     checkAnswer,
-    quizResultMap,
-    clearCurrentQuizResult,
+    quizResult,
     resetUserAnswer,
     generateExampleSentence: generateSentence,
     incompleteCards,

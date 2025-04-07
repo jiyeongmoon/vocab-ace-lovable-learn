@@ -3,9 +3,6 @@ import { VocabularyCard } from "@/types/vocab";
 
 export type QuizResult = "Correct" | "Incorrect" | null;
 
-// Map of card IDs to quiz results
-export type QuizResultMap = Record<string, QuizResult>;
-
 export interface VocabContextType {
   cards: VocabularyCard[];
   addCard: (card: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">) => void;
@@ -15,8 +12,7 @@ export interface VocabContextType {
   currentCard: VocabularyCard | null;
   nextCard: () => void;
   checkAnswer: (userAnswer: string) => QuizResult;
-  quizResultMap: QuizResultMap;
-  clearCurrentQuizResult: () => void;
+  quizResult: QuizResult;
   resetUserAnswer: () => void;
   generateExampleSentence: (word: string) => Promise<string>;
   incompleteCards: VocabularyCard[];

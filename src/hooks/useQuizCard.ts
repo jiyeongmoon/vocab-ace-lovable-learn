@@ -7,12 +7,11 @@ export function useQuizCard() {
   const {
     currentCard,
     nextCard,
-    clearCurrentQuizResult,
     resetUserAnswer,
     updateCard,
     incompleteCards,
     checkAnswer,
-    quizResultMap,
+    quizResult,
   } = useVocab();
 
   const [userAnswer, setUserAnswer] = useState("");
@@ -20,29 +19,17 @@ export function useQuizCard() {
   const [attemptedRetry, setAttemptedRetry] = useState(false);
   const hasSubmittedAnswer = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const currentCardRef = useRef<string | null>(null);
-
-  // Track the current card ID to detect card changes
-  useEffect(() => {
-    if (currentCard?.id) {
-      currentCardRef.current = currentCard.id;
-    }
-  }, [currentCard?.id]);
 
   // Reset states when card changes
   useEffect(() => {
     if (currentCard) {
       console.log("useQuizCard - Card changed to:", currentCard.id);
       
-      // Only reset states if we've moved to a different card
-      if (currentCardRef.current !== currentCard.id) {
-        console.log("useQuizCard - Resetting states for new card");
-        setUserAnswer("");
-        setShowAnswer(false);
-        setAttemptedRetry(false);
-        hasSubmittedAnswer.current = false;
-        currentCardRef.current = currentCard.id;
-      }
+      // Reset states for new card
+      setUserAnswer("");
+      setShowAnswer(false);
+      setAttemptedRetry(false);
+      hasSubmittedAnswer.current = false;
       
       // Focus the input field when a new card is shown
       setTimeout(() => {
@@ -51,21 +38,18 @@ export function useQuizCard() {
     }
   }, [currentCard?.id]);
 
-  // Get the quiz result for the current card
-  const currentQuizResult = currentCard ? quizResultMap[currentCard.id] : null;
-
   // Show feedback only after the user has submitted an answer and we have a result
   useEffect(() => {
     console.log("useQuizCard - Result effect:", { 
-      currentQuizResult, 
+      quizResult, 
       hasSubmitted: hasSubmittedAnswer.current, 
       cardId: currentCard?.id 
     });
     
-    if (currentQuizResult && hasSubmittedAnswer.current) {
+    if (quizResult && hasSubmittedAnswer.current) {
       setShowAnswer(true);
     }
-  }, [currentQuizResult, currentCard?.id]);
+  }, [quizResult, currentCard?.id]);
 
   // Handle keydown for Enter key to move to next word
   useEffect(() => {
@@ -92,7 +76,7 @@ export function useQuizCard() {
     // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
     
-    // Check the answer - this will update quizResultMap
+    // Check the answer
     console.log("useQuizCard - Submitting answer:", userAnswer, "for card:", currentCard.id);
     checkAnswer(userAnswer);
   };
@@ -104,14 +88,9 @@ export function useQuizCard() {
     setAttemptedRetry(false);
     hasSubmittedAnswer.current = false;
     
-    // Then move to the next card
+    // Move to the next card
+    // Note: quizResult will be reset inside nextCard() after the card has changed
     nextCard();
-    
-    // Clear the result for the current card AFTER moving to the next card
-    // This ensures the feedback is properly displayed before clearing
-    setTimeout(() => {
-      clearCurrentQuizResult();
-    }, 0);
   };
 
   const handleRetry = () => {
@@ -141,7 +120,7 @@ export function useQuizCard() {
     attemptedRetry,
     hasSubmittedAnswer: hasSubmittedAnswer.current,
     inputRef,
-    currentQuizResult,
+    quizResult,
     incompleteCards,
     handleSubmit,
     handleNext,

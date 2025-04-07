@@ -23,7 +23,7 @@ const QuizCard: React.FC = () => {
     attemptedRetry,
     hasSubmittedAnswer,
     inputRef,
-    currentQuizResult,
+    quizResult,
     incompleteCards,
     handleSubmit,
     handleNext,
@@ -41,7 +41,7 @@ const QuizCard: React.FC = () => {
   
   console.log("QuizCard - Rendering:", { 
     showAnswer, 
-    currentQuizResult, 
+    quizResult, 
     hasSubmittedAnswer,
     cardId: currentCard.id 
   });
@@ -68,14 +68,14 @@ const QuizCard: React.FC = () => {
         <QuizDebugPanel
           cardId={currentCard.id}
           hasSubmitted={hasSubmittedAnswer}
-          quizResult={currentQuizResult}
+          quizResult={quizResult}
           showAnswer={showAnswer}
         />
         
-        {showAnswer && currentQuizResult && hasSubmittedAnswer && (
+        {showAnswer && quizResult && hasSubmittedAnswer && (
           <QuizFeedback
             currentCard={currentCard}
-            quizResult={currentQuizResult}
+            quizResult={quizResult}
             userAnswer={userAnswer}
             attemptedRetry={attemptedRetry}
             onRetry={handleRetry}
@@ -86,7 +86,7 @@ const QuizCard: React.FC = () => {
       
       {showAnswer && (
         <CardFooter>
-          <QuizCardFooter onNext={handleNext} quizResult={currentQuizResult} />
+          <QuizCardFooter onNext={handleNext} quizResult={quizResult} />
         </CardFooter>
       )}
     </Card>
