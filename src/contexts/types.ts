@@ -1,5 +1,8 @@
 
-import { VocabularyCard, QuizResult } from "@/types/vocab";
+import { VocabularyCard } from "@/types/vocab";
+import { QuizResultMap } from "./VocabContext";
+
+export type QuizResult = "Correct" | "Incorrect" | null;
 
 export interface VocabContextType {
   cards: VocabularyCard[];
@@ -10,7 +13,8 @@ export interface VocabContextType {
   currentCard: VocabularyCard | null;
   nextCard: () => void;
   checkAnswer: (userAnswer: string) => QuizResult;
-  quizResult: QuizResult;
+  quizResultMap: QuizResultMap;
+  clearCurrentQuizResult: () => void;
   resetUserAnswer: () => void;
   generateExampleSentence: (word: string) => Promise<string>;
   incompleteCards: VocabularyCard[];

@@ -70,16 +70,11 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const nextCard = () => {
-    console.log("VocabContext - nextCard - Resetting quizResult");
-
-    if (currentCard) {
-      setQuizResultMap(prev => {
-        const updated = { ...prev };
-        delete updated[currentCard.id];
-        return updated;
-      });
-    }
-
+    console.log("VocabContext - nextCard - Current card ID:", currentCard?.id);
+    
+    // Don't reset quizResultMap here - we want to preserve it for the next render
+    // We'll clear the specific result when needed
+    
     resetUserAnswer();
 
     if (incompleteCards.length > 0) {
@@ -89,8 +84,19 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const checkAnswer = (userAnswer: string) => {
-    if (!currentCard) return;
+  const clearCurrentQuizResult = () => {
+    if (currentCard) {
+      console.log("VocabContext - clearCurrentQuizResult - Clearing result for card:", currentCard.id);
+      setQuizResultMap(prev => {
+        const updated = { ...prev };
+        delete updated[currentCard.id];
+        return updated;
+      });
+    }
+  };
+
+  const checkAnswer = (userAnswer: string): QuizResult | null => {
+    if (!currentCard) return null;
 
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     const correctMeanings = currentCard.meaning
@@ -100,8 +106,9 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
 
-    console.log("VocabContext - Setting quiz result to:", result);
+    console.log("VocabContext - Setting quiz result to:", result, "for card:", currentCard.id);
 
+    // Update the quiz result map with the current card's result
     setQuizResultMap(prev => ({
       ...prev,
       [currentCard.id]: result,
@@ -120,6 +127,8 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
       }
     }
+
+    return result;
   };
 
   const toggleOpenAI = (enabled: boolean) => {
@@ -150,6 +159,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     nextCard,
     checkAnswer,
     quizResultMap,
+    clearCurrentQuizResult,
     resetUserAnswer,
     generateExampleSentence: generateSentence,
     incompleteCards,

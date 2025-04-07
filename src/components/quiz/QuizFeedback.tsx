@@ -23,10 +23,11 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
 }) => {
   // Debug log to see what props we're receiving
   useEffect(() => {
-    console.log("QuizFeedback props:", { 
+    console.log("QuizFeedback - Props received:", { 
       quizResult, 
       userAnswer, 
       currentCardWord: currentCard?.word,
+      cardId: currentCard?.id,
       attemptedRetry 
     });
   }, [quizResult, userAnswer, currentCard, attemptedRetry]);
@@ -34,7 +35,7 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
   // Safety check - early return with debug message if no quiz result
   if (!quizResult) {
     console.log("QuizFeedback - No quiz result, not rendering");
-    return <div className="p-4 bg-yellow-100 rounded-md">Waiting for quiz result...</div>;
+    return null;
   }
 
   const openDictionary = () => {
