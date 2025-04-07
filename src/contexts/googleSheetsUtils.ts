@@ -70,7 +70,8 @@ export const submitQuizResultToGoogleSheets = async (
       },
       body: JSON.stringify({
         sheetName: config.sheetName,
-        data: result
+        data: result,
+        action: "submitQuizResult"  // Add action identifier to help server identify request type
       })
     });
     
@@ -84,6 +85,7 @@ export const submitQuizResultToGoogleSheets = async (
       showToast("Success", `Result for "${result.word}" saved to Google Sheets`);
       return true;
     } else {
+      console.error("Google Sheets error:", responseData.error, responseData.debug);
       showToast("Error", responseData.error || "Failed to save to Google Sheets");
       return false;
     }
@@ -123,7 +125,8 @@ export const submitVocabWordToGoogleSheets = async (
         sheetName: customSheetName || config.sheetName,
         word: vocabWord.word,
         meaning: vocabWord.meaning,
-        example: vocabWord.example
+        example: vocabWord.example,
+        action: "submitVocabWord"  // Add action identifier to help server identify request type
       })
     });
     
@@ -142,6 +145,7 @@ export const submitVocabWordToGoogleSheets = async (
       showToast("Success", `Vocabulary word "${vocabWord.word}" saved to Google Sheets`);
       return true;
     } else {
+      console.error("Google Sheets error:", responseData.error, responseData.debug);
       showToast("Error", responseData.error || "Failed to save to Google Sheets");
       return false;
     }

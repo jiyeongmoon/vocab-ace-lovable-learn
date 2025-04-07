@@ -44,48 +44,61 @@ function doPost(e) {
         "Example Sentence",
         "Date Added"
       ]);
-    } else if (!isNewSheet) {
-      // Check if the sheet has the required headers
-      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
       
-      // Debug log to see what headers were detected
-      console.log("Detected headers in sheet: " + JSON.stringify(headers));
+      // Format headers to be bold
+      sheet.getRange(1, 1, 1, 4).setFontWeight("bold");
+    }
+    
+    // Debug: Check all sheets in the spreadsheet
+    const sheets = ss.getSheets();
+    const sheetNames = sheets.map(s => s.getName());
+    console.log("Available sheets: " + JSON.stringify(sheetNames));
+    
+    // Always check headers whether the sheet is new or not
+    const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn() || 4).getValues()[0];
+    console.log("Raw headers detected: " + JSON.stringify(headerRow));
+    
+    // Normalize headers to lowercase and trim whitespace for consistent comparison
+    const normalizedHeaders = headerRow.map(header => 
+      header ? String(header).trim().toLowerCase() : ""
+    );
+    console.log("Normalized headers: " + JSON.stringify(normalizedHeaders));
+    
+    // Check if required headers exist (case-insensitive, ignoring whitespace)
+    const hasWordColumn = normalizedHeaders.some(h => h === "word");
+    const hasMeaningColumn = normalizedHeaders.some(h => h === "meaning");
+    
+    // If missing required headers and not a new sheet (which we already set up correctly)
+    if (!isNewSheet && (!hasWordColumn || !hasMeaningColumn)) {
+      console.log("Required headers missing. Word exists: " + hasWordColumn + ", Meaning exists: " + hasMeaningColumn);
       
-      // Normalize headers for comparison (trim whitespace and convert to lowercase)
-      const normalizedHeaders = headers.map(header => 
-        header ? String(header).trim().toLowerCase() : ""
-      );
+      // Find the last used row to determine if we need to add headers to an empty sheet
+      // or if we need to create a new row for headers
+      const lastRow = sheet.getLastRow();
       
-      console.log("Normalized headers: " + JSON.stringify(normalizedHeaders));
-      
-      // Check if required headers exist (case-insensitive, ignoring whitespace)
-      const hasWordColumn = normalizedHeaders.some(h => h === "word");
-      const hasMeaningColumn = normalizedHeaders.some(h => h === "meaning");
-      
-      // If headers are missing, add them
-      if (!hasWordColumn || !hasMeaningColumn) {
-        console.log("Required headers missing. Word exists: " + hasWordColumn + ", Meaning exists: " + hasMeaningColumn);
+      if (lastRow === 0) {
+        // Sheet is empty, add headers
+        sheet.appendRow([
+          "Word", 
+          "Meaning", 
+          "Example Sentence",
+          "Date Added"
+        ]);
         
-        // Find the last used row to determine if we need to add headers to an empty sheet
-        // or if we need to create a new row for headers
-        const lastRow = sheet.getLastRow();
-        
-        if (lastRow === 0) {
-          // Sheet is empty, add headers
-          sheet.appendRow([
-            "Word", 
-            "Meaning", 
-            "Example Sentence",
-            "Date Added"
-          ]);
-        } else {
-          // Sheet has data but missing headers - prepend headers row
-          sheet.insertRowBefore(1);
-          sheet.getRange(1, 1, 1, 4).setValues([
-            ["Word", "Meaning", "Example Sentence", "Date Added"]
-          ]);
-        }
+        // Format headers to be bold
+        sheet.getRange(1, 1, 1, 4).setFontWeight("bold");
+      } else {
+        // Sheet has data but missing headers - prepend headers row
+        sheet.insertRowBefore(1);
+        sheet.getRange(1, 1, 1, 4).setValues([
+          ["Word", "Meaning", "Example Sentence", "Date Added"]
+        ]);
+        sheet.getRange(1, 1, 1, 4).setFontWeight("bold");
       }
+      
+      // Re-fetch headers after adding them
+      const updatedHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn() || 4).getValues()[0];
+      console.log("Updated headers: " + JSON.stringify(updatedHeaders));
     }
     
     // Format date for better readability
@@ -96,36 +109,51 @@ function doPost(e) {
       "yyyy-MM-dd HH:mm:ss"
     );
     
-    // Find column indices based on normalized header names
-    const headerRow = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-    const normalizedHeaders = headerRow.map(header => 
+    // Find column indices based on normalized header names (re-fetch headers in case they were updated)
+    const currentHeaders = sheet.getRange(1, 1, 1, sheet.getLastColumn() || 4).getValues()[0];
+    const currentNormalizedHeaders = currentHeaders.map(header => 
       header ? String(header).trim().toLowerCase() : ""
     );
     
     // Find column indices (0-based)
-    const wordColIndex = normalizedHeaders.findIndex(h => h === "word");
-    const meaningColIndex = normalizedHeaders.findIndex(h => h === "meaning");
-    const exampleColIndex = normalizedHeaders.findIndex(h => 
-      h === "example sentence" || h === "example" || h === "examples" || h === "sentence"
-    );
-    const dateColIndex = normalizedHeaders.findIndex(h => 
-      h === "date added" || h === "date" || h === "added date" || h === "added"
-    );
+    const wordColIndex = findColumnIndex(currentNormalizedHeaders, ["word"]);
+    const meaningColIndex = findColumnIndex(currentNormalizedHeaders, ["meaning"]);
+    const exampleColIndex = findColumnIndex(currentNormalizedHeaders, ["example sentence", "example", "examples", "sentence"]);
+    const dateColIndex = findColumnIndex(currentNormalizedHeaders, ["date added", "date", "added date", "added"]);
     
-    // Prepare the row data (mapping to the correct columns)
-    const rowData = [];
+    console.log("Column indices - Word: " + wordColIndex + ", Meaning: " + meaningColIndex + 
+               ", Example: " + exampleColIndex + ", Date: " + dateColIndex);
     
-    // Ensure array has enough elements for the largest index
-    const maxIndex = Math.max(wordColIndex, meaningColIndex, exampleColIndex, dateColIndex);
-    for (let i = 0; i <= maxIndex; i++) {
-      rowData[i] = "";  // Fill with empty strings initially
+    // If we still can't find the required columns, return an error
+    if (wordColIndex === -1 || meaningColIndex === -1) {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: false,
+        error: "Could not find Word and Meaning columns in the sheet",
+        debug: {
+          rawHeaders: currentHeaders,
+          normalizedHeaders: currentNormalizedHeaders,
+          wordColumnFound: wordColIndex !== -1,
+          meaningColumnFound: meaningColIndex !== -1
+        }
+      }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeaders(headers);
+    }
+    
+    // Prepare the row data based on the action type
+    let rowData = [];
+    const maxColumns = sheet.getLastColumn() || 4;
+    
+    // Initialize rowData array with empty strings
+    for (let i = 0; i < maxColumns; i++) {
+      rowData[i] = "";
     }
     
     // Set values in the appropriate columns
-    if (wordColIndex >= 0) rowData[wordColIndex] = payload.word;
-    if (meaningColIndex >= 0) rowData[meaningColIndex] = payload.meaning;
-    if (exampleColIndex >= 0) rowData[exampleColIndex] = payload.example;
-    if (dateColIndex >= 0) rowData[dateColIndex] = formattedDate;
+    if (wordColIndex !== -1) rowData[wordColIndex] = payload.word || "";
+    if (meaningColIndex !== -1) rowData[meaningColIndex] = payload.meaning || "";
+    if (exampleColIndex !== -1) rowData[exampleColIndex] = payload.example || "";
+    if (dateColIndex !== -1) rowData[dateColIndex] = formattedDate;
     
     // Append the data to the sheet
     sheet.appendRow(rowData);
@@ -135,8 +163,8 @@ function doPost(e) {
       success: true,
       message: "Vocabulary added successfully",
       debug: {
-        detectedHeaders: headerRow,
-        normalizedHeaders: normalizedHeaders,
+        detectedHeaders: currentHeaders,
+        normalizedHeaders: currentNormalizedHeaders,
         columnIndices: {
           word: wordColIndex,
           meaning: meaningColIndex,
@@ -155,6 +183,8 @@ function doPost(e) {
       "Content-Type": "application/json"
     };
     
+    console.error("Error in doPost: " + error.message + "\n" + error.stack);
+    
     return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.message,
@@ -163,6 +193,19 @@ function doPost(e) {
     .setMimeType(ContentService.MimeType.JSON)
     .setHeaders(headers);
   }
+}
+
+/**
+ * Helper function to find a column index based on possible header names
+ * Returns -1 if not found
+ */
+function findColumnIndex(normalizedHeaders, possibleNames) {
+  for (let i = 0; i < normalizedHeaders.length; i++) {
+    if (possibleNames.some(name => normalizedHeaders[i] === name.toLowerCase())) {
+      return i;
+    }
+  }
+  return -1;
 }
 
 /**
@@ -211,6 +254,16 @@ Make sure your Google Apps Script is attached to the spreadsheet where you want 
 
 This ensures the script has access to your vocabulary spreadsheet.
 
+## Troubleshooting Header Detection
+
+If you're getting the "Sheet must contain columns for Word and Meaning" error:
+
+1. Make sure your sheet has headers in the first row
+2. The script looks for "Word" and "Meaning" (case-insensitive, ignoring spaces)
+3. Check for invisible characters or formatting issues in your headers
+4. Look at the debug logs in your browser console for more information
+5. Try re-deploying the script after making changes
+
 ## Usage Notes
 
 - The script will create sheets with names provided in requests
@@ -218,10 +271,3 @@ This ensures the script has access to your vocabulary spreadsheet.
 - The Date Added column is formatted for easier reading
 - Headers are normalized (case-insensitive, whitespace trimmed)
 - Debug information is included in the response to help troubleshoot header issues
-
-## Troubleshooting
-
-If you encounter CORS errors:
-1. Make sure you deployed with "Anyone" access
-2. Try redeploying the script
-3. Check your browser console for specific error messages
