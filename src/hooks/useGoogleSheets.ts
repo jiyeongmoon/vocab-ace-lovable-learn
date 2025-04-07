@@ -46,6 +46,7 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
     userAnswer: string
   ): Promise<boolean> => {
     if (!isGoogleSheetsConfigured()) {
+      showToast("Error", "Google Sheets is not configured");
       return false;
     }
     
@@ -56,9 +57,15 @@ export const useGoogleSheets = (): UseGoogleSheetsReturn => {
       const meaningAsString = Array.isArray(meaning) ? meaning.join(", ") : meaning;
       const submission = createQuizResultSubmission(word, meaningAsString, isCorrect, userAnswer);
       const result = await submitQuizResultToGoogleSheets(submission);
+      
+      if (result) {
+        showToast("Success", `Quiz result for "${word}" saved to Google Sheets`);
+      }
+      
       return result;
     } catch (error) {
       console.error("Error submitting quiz result:", error);
+      showToast("Error", "Failed to submit quiz result to Google Sheets");
       return false;
     } finally {
       setSubmitting(false);

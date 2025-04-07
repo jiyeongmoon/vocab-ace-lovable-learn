@@ -1,5 +1,4 @@
 
-
 # Google Apps Script Code for Vocab Ace
 
 Copy and paste this code into a new Google Apps Script project in your Google Drive.
@@ -142,4 +141,3 @@ If you encounter CORS errors:
 1. Make sure you deployed with "Anyone" access
 2. Try redeploying the script
 3. Check your browser console for specific error messages
-
