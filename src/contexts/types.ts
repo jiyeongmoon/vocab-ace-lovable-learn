@@ -23,4 +23,5 @@ export interface VocabContextType {
   toggleOpenAI: (enabled: boolean) => void;
   openAIKey: string;
   updateOpenAIKey: (key: string) => void;
+  sessionStats: { correct: number; total: number };
 }

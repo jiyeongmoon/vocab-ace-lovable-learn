@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { VocabProvider, useVocab } from "@/contexts/VocabContext";
 import QuizCard from "@/components/quiz/QuizCard";
 import { Button } from "@/components/ui/button";
@@ -40,26 +40,9 @@ const Quiz = () => {
 
 // Component to handle quiz statistics - moved here inside the VocabProvider scope
 const QuizStatistics = () => {
-  const { quizResultMap } = useVocab();
-  const [correct, setCorrect] = useState(0);
-  const [total, setTotal] = useState(0);
-
-  // Update stats when quiz result map changes
-  useEffect(() => {
-    // Check if there's a new result in the map
-    const results = Object.values(quizResultMap);
-    if (results.length === 0) return;
-    
-    // Count the results for statistics
-    const correctCount = results.filter(result => result === "Correct").length;
-    const totalCount = results.length;
-    
-    setCorrect(correctCount);
-    setTotal(totalCount);
-    
-    console.log("QuizStatistics updated based on quizResultMap:", 
-      { map: quizResultMap, correct: correctCount, total: totalCount });
-  }, [quizResultMap]);
+  const { sessionStats } = useVocab();
+  
+  console.log("QuizStatistics - Using session stats:", sessionStats);
 
   return (
     <div className="space-y-6">
@@ -76,11 +59,11 @@ const QuizStatistics = () => {
           <div className="grid grid-cols-2 gap-4">
             <div className="border rounded-md p-3">
               <div className="text-sm text-muted-foreground">Session Correct</div>
-              <div className="text-xl font-bold">{correct}</div>
+              <div className="text-xl font-bold">{sessionStats.correct}</div>
             </div>
             <div className="border rounded-md p-3">
               <div className="text-sm text-muted-foreground">Session Total</div>
-              <div className="text-xl font-bold">{total}</div>
+              <div className="text-xl font-bold">{sessionStats.total}</div>
             </div>
           </div>
         </div>

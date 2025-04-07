@@ -23,6 +23,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [incompleteCards, setIncompleteCards] = useState<VocabularyCard[]>([]);
   const [openAIEnabled, setOpenAIEnabledState] = useState<boolean>(isOpenAIEnabled());
   const [openAIKey, setOpenAIKey] = useState<string>(localStorage.getItem("openai-api-key") || "");
+  const [sessionStats, setSessionStats] = useState<{ correct: number; total: number }>({ correct: 0, total: 0 });
 
   useEffect(() => {
     const loadedCards = loadCardsFromStorage();
@@ -101,6 +102,12 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Update the quiz result
     setQuizResult(result);
 
+    // Update session statistics
+    setSessionStats(prev => ({
+      correct: prev.correct + (isCorrect ? 1 : 0),
+      total: prev.total + 1
+    }));
+
     if (isCorrect) {
       const newCorrectCount = currentCard.correctCount + 1;
       const completed = newCorrectCount >= 10;
@@ -155,7 +162,8 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     openAIEnabled,
     toggleOpenAI,
     openAIKey,
-    updateOpenAIKey
+    updateOpenAIKey,
+    sessionStats
   };
 
   return <VocabContext.Provider value={value}>{children}</VocabContext.Provider>;
