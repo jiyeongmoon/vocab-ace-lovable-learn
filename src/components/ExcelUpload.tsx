@@ -4,18 +4,13 @@ import { Button } from "@/components/ui/button";
 import { useVocab } from "@/contexts/VocabContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Upload, FileText, AlertTriangle, X, Download, FileSpreadsheet } from "lucide-react";
+import { Upload, FileText, AlertTriangle, X, Download } from "lucide-react";
 import * as XLSX from "xlsx";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { fetchGoogleSheetData } from "@/contexts/vocabUtils";
 
 const ExcelUpload: React.FC = () => {
   const { addCards } = useVocab();
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [googleSheetUrl, setGoogleSheetUrl] = useState("");
-  const [isLoadingGoogleSheet, setIsLoadingGoogleSheet] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,59 +120,6 @@ const ExcelUpload: React.FC = () => {
     }
   };
 
-  const handleGoogleSheetImport = async () => {
-    if (!googleSheetUrl.trim()) {
-      toast({
-        title: "Invalid URL",
-        description: "Please enter a Google Sheet URL",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setIsLoadingGoogleSheet(true);
-    try {
-      const sheetData = await fetchGoogleSheetData(googleSheetUrl);
-      
-      if (sheetData.length === 0) {
-        toast({
-          title: "Import Failed",
-          description: "No valid data found in the Google Sheet. Make sure the sheet has Word and Meaning columns.",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      // Transform the data for our app
-      const validCards = sheetData.map(row => ({
-        word: row.Word.trim(),
-        meaning: row.Meaning.trim().split(',').map(m => m.trim()),
-        exampleSentence: row.Example || "",
-        userAnswer: ""
-      }));
-
-      // Add the cards
-      addCards(validCards);
-      
-      // Reset form
-      setGoogleSheetUrl("");
-      
-      toast({
-        title: "Import Successful",
-        description: `Imported ${validCards.length} vocabulary items from Google Sheet.`,
-      });
-    } catch (error: any) {
-      console.error("Google Sheet import error:", error);
-      toast({
-        title: "Import Failed",
-        description: error.message || "Failed to import from Google Sheet. Make sure the sheet is publicly accessible.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoadingGoogleSheet(false);
-    }
-  };
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -187,134 +129,87 @@ const ExcelUpload: React.FC = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="file" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="file">Excel/CSV File</TabsTrigger>
-            <TabsTrigger value="google">Google Sheet</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="file" className="space-y-4">
-            <div
-              className={`border-2 border-dashed rounded-lg p-6 text-center ${
-                file ? "border-primary" : "border-gray-300"
-              }`}
-              onDragOver={handleDragOver}
-              onDrop={handleDrop}
-            >
-              {!file ? (
-                <div className="space-y-4">
-                  <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">
-                      Drag and drop your Excel/CSV file here
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Your file should contain columns: Word, Meaning, and optionally Example Sentence
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      Browse Files
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={downloadTemplate}
-                      className="flex items-center"
-                    >
-                      <Download className="mr-1 h-4 w-4" />
-                      Download Template
-                    </Button>
-                  </div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".xlsx,.xls,.csv"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </div>
-              ) : (
-                <div className="flex items-center justify-between bg-primary/5 p-3 rounded">
-                  <div className="flex items-center">
-                    <FileText className="h-5 w-5 text-primary mr-2" />
-                    <div className="text-sm font-medium truncate max-w-[200px]">
-                      {file.name}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={clearFile}
-                    className="text-gray-500 hover:text-gray-700"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            <div className="flex items-center bg-amber-50 text-amber-800 p-3 rounded text-sm">
-              <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
-              <p>
-                Your Excel/CSV must include columns named "Word" and "Meaning". An optional "Example Sentence" column can also be included.
-              </p>
-            </div>
-
-            <Button
-              className="w-full"
-              onClick={processFile}
-              disabled={!file || isLoading}
-            >
-              {isLoading ? "Processing..." : "Import Vocabulary"}
-            </Button>
-          </TabsContent>
-          
-          <TabsContent value="google" className="space-y-4">
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 text-center ${
+            file ? "border-primary" : "border-gray-300"
+          }`}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        >
+          {!file ? (
             <div className="space-y-4">
               <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <FileSpreadsheet className="h-6 w-6 text-primary" />
+                <FileText className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="text-sm font-medium text-center">
-                  Import vocabulary from Google Sheets
+                <p className="text-sm font-medium">
+                  Drag and drop your Excel/CSV file here
                 </p>
-                <p className="text-xs text-muted-foreground mt-1 text-center">
-                  The Google Sheet must be publicly accessible (shared with "Anyone with the link")
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your file should contain columns: Word, Meaning, and optionally Example Sentence
                 </p>
               </div>
-              
-              <div className="space-y-2">
-                <Input
-                  placeholder="Paste Google Sheet URL here"
-                  value={googleSheetUrl}
-                  onChange={(e) => setGoogleSheetUrl(e.target.value)}
-                />
+              <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
                 <Button
-                  className="w-full"
-                  onClick={handleGoogleSheetImport}
-                  disabled={!googleSheetUrl || isLoadingGoogleSheet}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
                 >
-                  {isLoadingGoogleSheet ? "Importing..." : "Import from Google Sheet"}
+                  Browse Files
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={downloadTemplate}
+                  className="flex items-center"
+                >
+                  <Download className="mr-1 h-4 w-4" />
+                  Download Template
                 </Button>
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                onChange={handleFileChange}
+                className="hidden"
+              />
             </div>
-            
-            <div className="flex items-center bg-amber-50 text-amber-800 p-3 rounded text-sm">
-              <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
-              <p>
-                Your Google Sheet must be set to "Anyone with the link can view" and should have columns named "Word" and "Meaning". An optional "Example" column can also be included.
-              </p>
+          ) : (
+            <div className="flex items-center justify-between bg-primary/5 p-3 rounded">
+              <div className="flex items-center">
+                <FileText className="h-5 w-5 text-primary mr-2" />
+                <div className="text-sm font-medium truncate max-w-[200px]">
+                  {file.name}
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={clearFile}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          </TabsContent>
-        </Tabs>
+          )}
+        </div>
+
+        <div className="flex items-center bg-amber-50 text-amber-800 p-3 rounded text-sm mt-4">
+          <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0" />
+          <p>
+            Your Excel/CSV must include columns named "Word" and "Meaning". An optional "Example Sentence" column can also be included.
+          </p>
+        </div>
+
+        <Button
+          className="w-full mt-4"
+          onClick={processFile}
+          disabled={!file || isLoading}
+        >
+          {isLoading ? "Processing..." : "Import Vocabulary"}
+        </Button>
       </CardContent>
     </Card>
   );
