@@ -14,9 +14,8 @@ import QuizCardFooter from "./QuizCardFooter";
 import QuizDebugPanel from "./QuizDebugPanel";
 import { useQuizCard } from "@/hooks/useQuizCard";
 import { Eye } from "lucide-react";
-import { VocabProvider } from "@/contexts/VocabContext";
 
-const QuizCardContent: React.FC = () => {
+const QuizCard: React.FC = () => {
   const {
     currentCard,
     userAnswer,
@@ -117,15 +116,6 @@ const QuizCardContent: React.FC = () => {
         </CardFooter>
       )}
     </Card>
-  );
-};
-
-// This wrapper component provides the VocabProvider context
-const QuizCard: React.FC = () => {
-  return (
-    <VocabProvider>
-      <QuizCardContent />
-    </VocabProvider>
   );
 };
 
