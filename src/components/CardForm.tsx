@@ -32,8 +32,8 @@ const CardForm: React.FC = () => {
     
     if (!word.trim() || !meaning.trim()) return;
     
-    // Convert comma-separated meaning string to array
-    const meaningArray = meaning.split(',').map(m => m.trim());
+    // Convert delimited meaning string to array using multiple delimiters
+    const meaningArray = meaning.split(/[,;/]+/).map(m => m.trim()).filter(Boolean);
     
     addCard({
       word: word.trim(),
@@ -136,13 +136,13 @@ const CardForm: React.FC = () => {
           
           <div className="space-y-2">
             <Label htmlFor="meaning">
-              Meaning (separate multiple meanings with commas)
+              Meaning (separate with commas, semicolons, or slashes)
             </Label>
             <Input
               id="meaning"
               value={meaning}
               onChange={(e) => setMeaning(e.target.value)}
-              placeholder="e.g. awe, fear, reverence"
+              placeholder="e.g. awe, fear; reverence/respect"
               required
             />
           </div>

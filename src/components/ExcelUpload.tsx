@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { parseMeaningToArray } from "@/contexts/vocabUtils";
 
 const ExcelUpload: React.FC = () => {
   const { addCards } = useVocab();
@@ -124,8 +125,8 @@ const ExcelUpload: React.FC = () => {
       .filter((row: any) => row.Word && row.Meaning)
       .map((row: any) => ({
         word: String(row.Word).trim(),
-        // Convert meaning to array
-        meaning: String(row.Meaning).trim().split(',').map((m: string) => m.trim()),
+        // Convert meaning to array using multiple delimiters
+        meaning: parseMeaningToArray(String(row.Meaning).trim()),
         exampleSentence: row.Example || row["Example Sentence"] || "",
         userAnswer: ""
       }));

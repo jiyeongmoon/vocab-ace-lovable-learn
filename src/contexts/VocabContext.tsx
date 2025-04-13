@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard } from "@/types/vocab";
 import { VocabContextType, QuizResult } from "./types";
@@ -9,7 +10,8 @@ import {
   showToast,
   generateExampleSentence as generateSentence,
   isOpenAIEnabled,
-  setOpenAIEnabled
+  setOpenAIEnabled,
+  parseMeaningToArray
 } from "./vocabUtils";
 
 const VocabContext = createContext<VocabContextType | undefined>(undefined);
@@ -32,10 +34,10 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Convert any string meanings to arrays for compatibility
     const normalizedCards = loadedCards.map(card => {
       if (typeof card.meaning === 'string') {
-        // Convert string to array of meanings
+        // Convert string to array of meanings using parseMeaningToArray
         return {
           ...card,
-          meaning: (card.meaning as unknown as string).split(',').map(m => m.trim())
+          meaning: parseMeaningToArray(card.meaning as unknown as string)
         };
       }
       return card;
@@ -129,7 +131,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const meaningArray = Array.isArray(card.meaning) 
       ? card.meaning 
       : typeof card.meaning === 'string'
-        ? (card.meaning as unknown as string).split(',').map(m => m.trim())
+        ? parseMeaningToArray(card.meaning as unknown as string)
         : [];
     
     const newCard = createNewCard({
@@ -147,7 +149,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       meaning: Array.isArray(card.meaning) 
         ? card.meaning 
         : typeof card.meaning === 'string'
-          ? (card.meaning as unknown as string).split(',').map(m => m.trim())
+          ? parseMeaningToArray(card.meaning as unknown as string)
           : []
     }));
     
@@ -161,7 +163,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       updatedFields.meaning = Array.isArray(updatedFields.meaning)
         ? updatedFields.meaning
         : typeof updatedFields.meaning === 'string'
-          ? (updatedFields.meaning as unknown as string).split(',').map(m => m.trim())
+          ? parseMeaningToArray(updatedFields.meaning as unknown as string)
           : [];
     }
     
@@ -222,7 +224,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const correctMeanings = Array.isArray(currentCard.meaning) 
       ? currentCard.meaning.map(m => m.toLowerCase().trim()) 
       : typeof currentCard.meaning === 'string'
-        ? (currentCard.meaning as unknown as string).split(',').map(m => m.toLowerCase().trim()) 
+        ? parseMeaningToArray(currentCard.meaning as unknown as string).map(m => m.toLowerCase().trim())
         : [];
 
     const isCorrect = correctMeanings.includes(normalizedUserAnswer);

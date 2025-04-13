@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { VocabularyCard, QuizResult } from "@/types/vocab";
+import { parseMeaningToArray } from "@/contexts/vocabUtils";
 
 interface QuizFeedbackProps {
   currentCard: VocabularyCard;
@@ -20,11 +21,11 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
   onRetry,
   formattedSentence,
 }) => {
-  // Ensure meaning is always an array for rendering
+  // Ensure meaning is always an array for rendering using our parsing function
   const meaningArray = Array.isArray(currentCard.meaning)
     ? currentCard.meaning
     : typeof currentCard.meaning === 'string'
-      ? (currentCard.meaning as unknown as string).split(',').map(m => m.trim())
+      ? parseMeaningToArray(currentCard.meaning as unknown as string)
       : [];
 
   return (

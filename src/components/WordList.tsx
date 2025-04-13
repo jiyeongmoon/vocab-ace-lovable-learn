@@ -35,6 +35,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { parseMeaningToArray } from "@/contexts/vocabUtils";
 
 const WordList: React.FC = () => {
   const { cards, deleteCard, resetAllCards } = useVocab();
@@ -51,7 +52,7 @@ const WordList: React.FC = () => {
     const meanings = Array.isArray(card.meaning)
       ? card.meaning
       : typeof card.meaning === 'string'
-        ? (card.meaning as unknown as string).split(',')
+        ? parseMeaningToArray(card.meaning as unknown as string)
         : [];
     
     return (

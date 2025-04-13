@@ -6,6 +6,19 @@ import { toast } from "@/components/ui/use-toast";
 export const LOCAL_STORAGE_KEY = "vocab-ace-cards";
 export const OPENAI_ENABLED_KEY = "vocab-ace-openai-enabled";
 
+/**
+ * Parses a meaning string into an array of individual meanings
+ * Supports multiple delimiters: commas, semicolons, and slashes
+ */
+export const parseMeaningToArray = (meaningString: string): string[] => {
+  if (!meaningString) return [];
+  
+  return meaningString
+    .split(/[,;/]+/)  // Split by comma, semicolon, or slash
+    .map(item => item.trim())
+    .filter(Boolean);  // Remove empty strings
+};
+
 export const createNewCard = (
   cardData: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">
 ): VocabularyCard => {
