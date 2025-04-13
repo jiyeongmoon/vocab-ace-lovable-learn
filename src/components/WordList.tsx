@@ -25,12 +25,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const WordList: React.FC = () => {
-  const { cards, deleteCard } = useVocab();
+  const { cards, deleteCard, resetAllCards } = useVocab();
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"correctCount">("correctCount");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   
   // Filter cards based on search term
   const filteredCards = cards.filter((card) => {
@@ -70,6 +81,12 @@ const WordList: React.FC = () => {
     setSearchTerm("");
     setSortOrder("desc");
   };
+
+  // Handle reset confirmation
+  const handleResetConfirm = () => {
+    resetAllCards();
+    setIsResetDialogOpen(false);
+  };
   
   return (
     <div className="space-y-4">
@@ -92,18 +109,28 @@ const WordList: React.FC = () => {
           </Button>
         </div>
         
-        <Select
-          value={sortOrder}
-          onValueChange={(value) => setSortOrder(value as "asc" | "desc")}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Sort by Progress" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="desc">Highest Progress First</SelectItem>
-            <SelectItem value="asc">Lowest Progress First</SelectItem>
-          </SelectContent>
-        </Select>
+        <div className="flex gap-2">
+          <Select
+            value={sortOrder}
+            onValueChange={(value) => setSortOrder(value as "asc" | "desc")}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by Progress" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="desc">Highest Progress First</SelectItem>
+              <SelectItem value="asc">Lowest Progress First</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Button 
+            variant="destructive" 
+            onClick={() => setIsResetDialogOpen(true)}
+            title="Clear all words"
+          >
+            Clear All Words
+          </Button>
+        </div>
       </div>
       
       <Table>
@@ -183,6 +210,23 @@ const WordList: React.FC = () => {
           )}
         </TableBody>
       </Table>
+
+      <AlertDialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear All Words</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to clear all vocabulary words? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetConfirm}>
+              Clear All
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

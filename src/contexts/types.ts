@@ -9,6 +9,7 @@ export interface VocabContextType {
   addCards: (cards: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">[]) => void;
   updateCard: (id: string, card: Partial<VocabularyCard>) => void;
   deleteCard: (id: string) => void;
+  resetAllCards: () => void;
   currentCard: VocabularyCard | null;
   nextCard: () => void;
   checkAnswer: (userAnswer: string) => QuizResult;

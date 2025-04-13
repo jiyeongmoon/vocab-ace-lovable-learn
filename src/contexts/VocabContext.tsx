@@ -54,14 +54,12 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setIncompleteCards(filtered);
   }, [cards]);
 
-  // Initialize or refresh the card queue when incompleteCards changes
   useEffect(() => {
     if (incompleteCards.length > 0 && cardQueue.length === 0) {
       initializeCardQueue();
     }
   }, [incompleteCards]);
 
-  // Helper function to shuffle an array using Fisher-Yates algorithm
   const shuffleArray = <T extends unknown>(array: T[]): T[] => {
     const shuffled = [...array];
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -71,17 +69,14 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return shuffled;
   };
 
-  // Initialize the card queue with a smart prioritization system
   const initializeCardQueue = () => {
     console.log("Initializing card queue with", incompleteCards.length, "incomplete cards");
     
-    // Group cards by correctCount tiers
-    const beginnerCards: VocabularyCard[] = [];    // correctCount 0-2
-    const intermediateCards: VocabularyCard[] = []; // correctCount 3-6
-    const advancedCards: VocabularyCard[] = [];     // correctCount 7-9
-    
+    const beginnerCards: VocabularyCard[] = [];
+    const intermediateCards: VocabularyCard[] = [];
+    const advancedCards: VocabularyCard[] = [];
+
     incompleteCards.forEach(card => {
-      // Skip cards that were recently shown (to avoid immediate repetition)
       if (recentlyShownCardIds.includes(card.id)) {
         return;
       }
@@ -94,57 +89,43 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         beginnerCards.push(card);
       }
     });
-    
-    // Shuffle each tier separately
+
     const shuffledBeginner = shuffleArray(beginnerCards);
     const shuffledIntermediate = shuffleArray(intermediateCards);
     const shuffledAdvanced = shuffleArray(advancedCards);
-    
-    // Build queue with weighted distribution:
-    // - Beginner cards get the highest priority (frequent appearance)
-    // - Intermediate cards get medium priority
-    // - Advanced cards get lowest priority (rare appearance)
+
     let newQueue: VocabularyCard[] = [];
-    
-    // If there are enough cards, create a balanced queue
+
     if (incompleteCards.length > 10) {
-      // Add more beginner cards, fewer advanced cards
       newQueue = [
         ...shuffledBeginner,
         ...shuffledIntermediate,
         ...shuffledAdvanced,
       ];
     } else {
-      // For small sets, just shuffle all available cards
       newQueue = shuffleArray([...incompleteCards]);
     }
-    
-    // Filter out any cards that are in the recently shown list
+
     newQueue = newQueue.filter(card => !recentlyShownCardIds.includes(card.id));
-    
-    // If queue is empty after filtering (all cards were recently shown), 
-    // clear the recently shown list and try again
+
     if (newQueue.length === 0 && incompleteCards.length > 0) {
       setRecentlyShownCardIds([]);
       newQueue = shuffleArray([...incompleteCards]);
     }
-    
+
     console.log("New queue created with", newQueue.length, "cards");
     setCardQueue(newQueue);
   };
 
-  // Add a card to the "recently shown" list to prevent immediate repetition
   const addToRecentlyShown = (cardId: string) => {
     setRecentlyShownCardIds(prev => {
       const updated = [cardId, ...prev];
-      // Keep only the last 5-6 cards to prevent a card from appearing again too soon
       const maxRecentCards = Math.min(5, Math.max(Math.floor(incompleteCards.length / 2), 1));
       return updated.slice(0, maxRecentCards);
     });
   };
 
   const addCard = (card: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">) => {
-    // Ensure meaning is always an array
     const meaningArray = Array.isArray(card.meaning) 
       ? card.meaning 
       : typeof card.meaning === 'string'
@@ -161,7 +142,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const addCards = (cardsToAdd: Omit<VocabularyCard, "id" | "correctCount" | "completed" | "createdAt">[]) => {
-    // Ensure all meanings are arrays
     const processedCards = cardsToAdd.map(card => ({
       ...card,
       meaning: Array.isArray(card.meaning) 
@@ -177,7 +157,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const updateCard = (id: string, updatedFields: Partial<VocabularyCard>) => {
-    // If meaning is being updated and it's a string, convert to array
     if (updatedFields.meaning !== undefined) {
       updatedFields.meaning = Array.isArray(updatedFields.meaning)
         ? updatedFields.meaning
@@ -196,6 +175,14 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast("Card Deleted", "The vocabulary card has been removed.");
   };
 
+  const resetAllCards = () => {
+    setCards([]);
+    setCardQueue([]);
+    setRecentlyShownCardIds([]);
+    localStorage.removeItem(LOCAL_STORAGE_KEY);
+    showToast("Words Cleared", "All vocabulary cards have been cleared.");
+  };
+
   const resetUserAnswer = () => {
     if (currentCard) {
       updateCard(currentCard.id, { userAnswer: "" });
@@ -205,32 +192,25 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const nextCard = () => {
     console.log("VocabContext - nextCard - Current card ID:", currentCard?.id);
     
-    // Reset user answer
     resetUserAnswer();
     
-    // If current card exists, add it to the recently shown list to prevent immediate repetition
     if (currentCard) {
       addToRecentlyShown(currentCard.id);
     }
     
-    // Check if we need to refill the queue
     if (cardQueue.length === 0) {
       initializeCardQueue();
     }
     
-    // If we still have no cards in the queue (could happen if all cards are completed),
-    // reset the current card index
     if (cardQueue.length === 0) {
       setCurrentCardIndex(0);
       return;
     }
     
-    // Remove the first card from the queue
     const newQueue = [...cardQueue];
     newQueue.shift();
     setCardQueue(newQueue);
     
-    // Reset quiz result after changing the card
     setQuizResult(null);
   };
 
@@ -239,7 +219,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
     
-    // Handle meaning whether it's a string or array
     const correctMeanings = Array.isArray(currentCard.meaning) 
       ? currentCard.meaning.map(m => m.toLowerCase().trim()) 
       : typeof currentCard.meaning === 'string'
@@ -251,24 +230,19 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     console.log("VocabContext - Setting quiz result to:", result, "for card:", currentCard.id);
 
-    // Update the quiz result
     setQuizResult(result);
 
-    // Always save the user's answer in the card
     updateCard(currentCard.id, { userAnswer });
 
-    // Update session statistics
     setSessionStats(prev => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1
     }));
 
-    // If the answer is correct, update the card's correctCount and check if completed
     if (isCorrect) {
       const newCorrectCount = currentCard.correctCount + 1;
       const completed = newCorrectCount >= 10;
 
-      // Update the card with new correctCount and completed status
       updateCard(currentCard.id, {
         correctCount: newCorrectCount,
         completed
@@ -277,7 +251,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (completed) {
         showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
         
-        // Remove the completed card from the queue
         const newQueue = cardQueue.filter(card => card.id !== currentCard.id);
         setCardQueue(newQueue);
       }
@@ -301,7 +274,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     showToast("API Key Updated", "Your OpenAI API key has been saved.");
   };
 
-  // Get the current card from the beginning of the queue, or null if queue is empty
   const currentCard = cardQueue.length > 0 ? cardQueue[0] : null;
   const completedCards = cards.filter(card => card.completed);
 
@@ -311,6 +283,7 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     addCards,
     updateCard,
     deleteCard,
+    resetAllCards,
     currentCard,
     nextCard,
     checkAnswer,
