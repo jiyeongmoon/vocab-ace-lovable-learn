@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import {
   Card,
@@ -32,9 +31,7 @@ const QuizCard: React.FC = () => {
     handleRetry,
     formatExampleSentence,
     quizDirection,
-    setQuizDirection,
-    isStudyMode,
-    setIsStudyMode
+    setQuizDirection
   } = useQuizCard();
   
   const [isHovering, setIsHovering] = useState(false);
@@ -43,31 +40,24 @@ const QuizCard: React.FC = () => {
     return <QuizCardEmpty />;
   }
 
-  const formattedSentence = currentCard.exampleSentence 
-    ? formatExampleSentence(currentCard.exampleSentence, currentCard.word)
-    : "";
-  
-  // Ensure meaning is always treated as an array
-  const meaningArray = Array.isArray(currentCard.meaning)
-    ? currentCard.meaning
-    : typeof currentCard.meaning === 'string'
-      ? (currentCard.meaning as unknown as string).split(/[,;/]+/).map(m => m.trim())
-      : [];
-  
   return (
     <Card className="w-full">
       <CardHeader>
+        <QuizModeSelector 
+          quizDirection={quizDirection} 
+          setQuizDirection={setQuizDirection}
+        />
         <QuizCardHeader 
           currentCard={currentCard}
-          formattedSentence={formattedSentence}
+          formattedSentence={formatExampleSentence(currentCard.exampleSentence, currentCard.word)}
           incompleteCards={incompleteCards}
           quizDirection={quizDirection}
-          isStudyMode={isStudyMode}
+          isStudyMode={false}
         />
       </CardHeader>
       
       <CardContent className="space-y-6">
-        {formattedSentence && !isStudyMode && (
+        {currentCard.exampleSentence && (
           <div className="mt-2">
             <div 
               className="text-sm text-center cursor-pointer text-blue-600 hover:text-blue-800 inline-flex items-center"
@@ -102,13 +92,8 @@ const QuizCard: React.FC = () => {
           onSubmit={handleSubmit}
           showAnswer={showAnswer}
           inputRef={inputRef}
-          isStudyMode={isStudyMode}
+          isStudyMode={false}
           onNext={handleNext}
-        />
-        
-        <QuizModeSelector 
-          quizDirection={quizDirection} 
-          setQuizDirection={setQuizDirection}
         />
         
         <QuizDebugPanel
@@ -118,14 +103,14 @@ const QuizCard: React.FC = () => {
           showAnswer={showAnswer}
         />
         
-        {showAnswer && quizResult && hasSubmittedAnswer && !isStudyMode && (
+        {showAnswer && quizResult && hasSubmittedAnswer && (
           <QuizFeedback
             currentCard={currentCard}
             quizResult={quizResult}
             userAnswer={userAnswer}
             attemptedRetry={attemptedRetry}
             onRetry={handleRetry}
-            formattedSentence={formattedSentence}
+            formattedSentence={formatExampleSentence(currentCard.exampleSentence, currentCard.word)}
             quizDirection={quizDirection}
           />
         )}
