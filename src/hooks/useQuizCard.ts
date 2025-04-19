@@ -1,7 +1,7 @@
-
 import { useRef, useState, useEffect } from "react";
 import { useVocab } from "@/contexts/VocabContext";
 import { VocabularyCard } from "@/types/vocab";
+import { parseMeaningToArray } from "@/contexts/vocabUtils";
 
 export function useQuizCard() {
   const {
@@ -22,18 +22,15 @@ export function useQuizCard() {
   const hasSubmittedAnswer = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Reset states when card changes
   useEffect(() => {
     if (currentCard) {
       console.log("useQuizCard - Card changed to:", currentCard.id);
       
-      // Reset states for new card
       setUserAnswer("");
       setShowAnswer(false);
       setAttemptedRetry(false);
       hasSubmittedAnswer.current = false;
       
-      // Focus the input field when a new card is shown (not in study mode)
       if (!isStudyMode) {
         setTimeout(() => {
           inputRef.current?.focus();
@@ -42,7 +39,6 @@ export function useQuizCard() {
     }
   }, [currentCard?.id, isStudyMode]);
 
-  // Show feedback only after the user has submitted an answer and we have a result
   useEffect(() => {
     console.log("useQuizCard - Result effect:", { 
       quizResult, 
@@ -55,7 +51,6 @@ export function useQuizCard() {
     }
   }, [quizResult, currentCard?.id]);
 
-  // Handle keydown for Enter key to move to next word
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Enter" && showAnswer) {
@@ -69,7 +64,6 @@ export function useQuizCard() {
     };
   }, [showAnswer]);
 
-  // Handle study mode (show answer immediately)
   useEffect(() => {
     if (isStudyMode && currentCard) {
       setShowAnswer(true);
@@ -81,48 +75,43 @@ export function useQuizCard() {
     
     if (!userAnswer.trim() || !currentCard) return;
     
-    // Set flag to indicate we've submitted an answer - this must happen BEFORE checking answer
     hasSubmittedAnswer.current = true;
     
-    // Update the card with the user's answer
     updateCard(currentCard.id, { userAnswer });
     
-    // Check the answer
     console.log("useQuizCard - Submitting answer:", userAnswer, "for card:", currentCard.id);
     
-    // Check answer differently based on quiz direction
     if (quizDirection === "engToKor") {
-      checkAnswer(userAnswer);
+      const correctMeanings = Array.isArray(currentCard.meaning)
+        ? currentCard.meaning.map(m => m.toLowerCase().trim())
+        : parseMeaningToArray(currentCard.meaning as string).map(m => m.toLowerCase().trim());
+      
+      const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+      const isCorrect = correctMeanings.includes(normalizedUserAnswer);
+      
+      checkAnswer(isCorrect ? userAnswer : userAnswer);
     } else {
-      // For korToEng, we need to check against the word
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const correctWord = currentCard.word.toLowerCase();
       
-      // Consider correct if the answer matches the word (ignoring case)
-      // Also handle basic forms (removing -s, -es, -ed, -ing)
       const isCorrect = 
         normalizedUserAnswer === correctWord || 
         normalizedUserAnswer === correctWord + "s" ||
         normalizedUserAnswer === correctWord + "es" ||
         normalizedUserAnswer === correctWord + "ed" ||
         normalizedUserAnswer === correctWord + "ing" ||
-        // Remove endings if they exist in user answer
         normalizedUserAnswer.replace(/(?:ed|es|s|ing)$/, "") === correctWord;
       
-      // Use the checkAnswer function with a fixed comparison
       checkAnswer(isCorrect ? currentCard.word : userAnswer);
     }
   };
 
   const handleNext = () => {
-    // Reset all local states first
     setShowAnswer(false);
     setUserAnswer("");
     setAttemptedRetry(false);
     hasSubmittedAnswer.current = false;
     
-    // Move to the next card
-    // Note: quizResult will be reset inside nextCard() after the card has changed
     nextCard();
   };
 
@@ -132,7 +121,6 @@ export function useQuizCard() {
     setAttemptedRetry(true);
     hasSubmittedAnswer.current = false;
     
-    // Focus the input field when retrying (not in study mode)
     if (!isStudyMode) {
       setTimeout(() => {
         inputRef.current?.focus();
