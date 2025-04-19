@@ -11,6 +11,7 @@ interface QuizFeedbackProps {
   attemptedRetry: boolean;
   onRetry: () => void;
   formattedSentence: string;
+  quizDirection: "engToKor" | "korToEng";
 }
 
 const QuizFeedback: React.FC<QuizFeedbackProps> = ({
@@ -20,6 +21,7 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
   attemptedRetry,
   onRetry,
   formattedSentence,
+  quizDirection,
 }) => {
   // Ensure meaning is always an array for rendering using our parsing function
   const meaningArray = Array.isArray(currentCard.meaning)
@@ -42,7 +44,7 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
             Correct! 🎉
           </h3>
           <p className="text-green-700">
-            Great job! Your answer matches the correct meaning.
+            Great job! Your answer matches the correct {quizDirection === "engToKor" ? "meaning" : "word"}.
           </p>
         </div>
       ) : (
@@ -53,12 +55,22 @@ const QuizFeedback: React.FC<QuizFeedbackProps> = ({
           <p className="text-red-700 mb-2">
             Your answer: <span className="font-semibold">{userAnswer}</span>
           </p>
-          <p className="text-red-700 mb-1">Correct meaning:</p>
-          <ul className="list-disc pl-5 mb-4 text-red-700 text-left inline-block">
-            {meaningArray.map((meaning, index) => (
-              <li key={index}>{meaning}</li>
-            ))}
-          </ul>
+          
+          {quizDirection === "engToKor" ? (
+            <>
+              <p className="text-red-700 mb-1">Correct meaning:</p>
+              <ul className="list-disc pl-5 mb-4 text-red-700 text-left inline-block">
+                {meaningArray.map((meaning, index) => (
+                  <li key={index}>{meaning}</li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <p className="text-red-700 mb-4">
+              Correct word: <span className="font-semibold">{currentCard.word}</span>
+            </p>
+          )}
+          
           {!attemptedRetry && (
             <div className="mt-3">
               <Button

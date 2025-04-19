@@ -17,6 +17,8 @@ export function useQuizCard() {
   const [userAnswer, setUserAnswer] = useState("");
   const [showAnswer, setShowAnswer] = useState(false);
   const [attemptedRetry, setAttemptedRetry] = useState(false);
+  const [quizDirection, setQuizDirection] = useState<"engToKor" | "korToEng">("engToKor");
+  const [isStudyMode, setIsStudyMode] = useState(false);
   const hasSubmittedAnswer = useRef(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -31,12 +33,14 @@ export function useQuizCard() {
       setAttemptedRetry(false);
       hasSubmittedAnswer.current = false;
       
-      // Focus the input field when a new card is shown
-      setTimeout(() => {
-        inputRef.current?.focus();
-      }, 100);
+      // Focus the input field when a new card is shown (not in study mode)
+      if (!isStudyMode) {
+        setTimeout(() => {
+          inputRef.current?.focus();
+        }, 100);
+      }
     }
-  }, [currentCard?.id]);
+  }, [currentCard?.id, isStudyMode]);
 
   // Show feedback only after the user has submitted an answer and we have a result
   useEffect(() => {
@@ -65,6 +69,13 @@ export function useQuizCard() {
     };
   }, [showAnswer]);
 
+  // Handle study mode (show answer immediately)
+  useEffect(() => {
+    if (isStudyMode && currentCard) {
+      setShowAnswer(true);
+    }
+  }, [isStudyMode, currentCard?.id]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -78,7 +89,29 @@ export function useQuizCard() {
     
     // Check the answer
     console.log("useQuizCard - Submitting answer:", userAnswer, "for card:", currentCard.id);
-    checkAnswer(userAnswer);
+    
+    // Check answer differently based on quiz direction
+    if (quizDirection === "engToKor") {
+      checkAnswer(userAnswer);
+    } else {
+      // For korToEng, we need to check against the word
+      const normalizedUserAnswer = userAnswer.trim().toLowerCase();
+      const correctWord = currentCard.word.toLowerCase();
+      
+      // Consider correct if the answer matches the word (ignoring case)
+      // Also handle basic forms (removing -s, -es, -ed, -ing)
+      const isCorrect = 
+        normalizedUserAnswer === correctWord || 
+        normalizedUserAnswer === correctWord + "s" ||
+        normalizedUserAnswer === correctWord + "es" ||
+        normalizedUserAnswer === correctWord + "ed" ||
+        normalizedUserAnswer === correctWord + "ing" ||
+        // Remove endings if they exist in user answer
+        normalizedUserAnswer.replace(/(?:ed|es|s|ing)$/, "") === correctWord;
+      
+      // Use the checkAnswer function with a fixed comparison
+      checkAnswer(isCorrect ? currentCard.word : userAnswer);
+    }
   };
 
   const handleNext = () => {
@@ -99,10 +132,12 @@ export function useQuizCard() {
     setAttemptedRetry(true);
     hasSubmittedAnswer.current = false;
     
-    // Focus the input field when retrying
-    setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
+    // Focus the input field when retrying (not in study mode)
+    if (!isStudyMode) {
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
   };
 
   const formatExampleSentence = (sentence: string, word: string) => {
@@ -126,5 +161,9 @@ export function useQuizCard() {
     handleNext,
     handleRetry,
     formatExampleSentence,
+    quizDirection,
+    setQuizDirection,
+    isStudyMode,
+    setIsStudyMode
   };
 }

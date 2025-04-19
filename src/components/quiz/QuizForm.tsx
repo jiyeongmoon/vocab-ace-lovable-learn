@@ -9,6 +9,8 @@ interface QuizFormProps {
   onSubmit: (e: React.FormEvent) => void;
   showAnswer: boolean;
   inputRef: React.RefObject<HTMLInputElement>;
+  isStudyMode: boolean;
+  onNext: () => void;
 }
 
 const QuizForm: React.FC<QuizFormProps> = ({
@@ -16,28 +18,42 @@ const QuizForm: React.FC<QuizFormProps> = ({
   setUserAnswer,
   onSubmit,
   showAnswer,
-  inputRef
+  inputRef,
+  isStudyMode,
+  onNext
 }) => {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <Input
-          ref={inputRef}
-          value={userAnswer}
-          onChange={(e) => setUserAnswer(e.target.value)}
-          placeholder="Type the meaning of this word"
-          disabled={showAnswer}
-          autoFocus
-        />
-      </div>
+      {!isStudyMode && (
+        <div>
+          <Input
+            ref={inputRef}
+            value={userAnswer}
+            onChange={(e) => setUserAnswer(e.target.value)}
+            placeholder="Type your answer here"
+            disabled={showAnswer}
+            autoFocus
+          />
+        </div>
+      )}
       
-      {!showAnswer && (
+      {!showAnswer && !isStudyMode && (
         <Button 
           type="submit" 
           className="w-full" 
           disabled={!userAnswer.trim()}
         >
           Check Answer
+        </Button>
+      )}
+      
+      {!showAnswer && isStudyMode && (
+        <Button 
+          type="button" 
+          className="w-full"
+          onClick={onNext}
+        >
+          Show Next Word
         </Button>
       )}
     </form>
