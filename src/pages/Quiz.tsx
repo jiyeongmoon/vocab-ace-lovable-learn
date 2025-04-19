@@ -5,17 +5,15 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import QuizCard from "@/components/quiz/QuizCard";
 import { VocabProvider, useVocab } from "@/contexts/VocabContext";
+import QuizModeSelector from "@/components/quiz/QuizModeSelector";
 
 // Inner component that uses the VocabContext
 const QuizContent = () => {
   const navigate = useNavigate();
   const { setQuizMode } = useVocab();
   
-  // Set quiz mode on mount
   useEffect(() => {
     setQuizMode(true);
-    
-    // Clean up when leaving quiz mode
     return () => {
       setQuizMode(false);
     };
@@ -38,6 +36,9 @@ const QuizContent = () => {
         
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">
+            <div className="mb-6">
+              <QuizModeSelector />
+            </div>
             <QuizCard />
           </div>
           <div>
@@ -45,10 +46,10 @@ const QuizContent = () => {
               <h3 className="text-lg font-semibold mb-3">Quiz Tips</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li>• If English - type Korean Meaning</li>
+                <li>• If Korean - type English Word</li>
                 <li>• Review words regularly to reinforce learning</li>
-                <li>• Use the example sentences to understand context</li>
-                <li>• Press Enter to quickly move to the next word</li>
-                <li>• Click on dictionary links for more detailed meanings</li>
+                <li>• Press Enter to quickly submit your answer</li>
+                <li>• Pay attention to word variations (-ed, -s, etc.)</li>
               </ul>
             </div>
           </div>
@@ -58,13 +59,10 @@ const QuizContent = () => {
   );
 };
 
-// Wrapper component that provides VocabContext
-const Quiz = () => {
-  return (
-    <VocabProvider>
-      <QuizContent />
-    </VocabProvider>
-  );
-};
+const Quiz = () => (
+  <VocabProvider>
+    <QuizContent />
+  </VocabProvider>
+);
 
 export default Quiz;
