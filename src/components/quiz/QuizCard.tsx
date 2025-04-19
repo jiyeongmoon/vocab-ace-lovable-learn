@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import {
   Card,
@@ -14,6 +15,7 @@ import QuizDebugPanel from "./QuizDebugPanel";
 import QuizModeSelector from "./QuizModeSelector";
 import { useQuizCard } from "@/hooks/useQuizCard";
 import { Eye } from "lucide-react";
+import { parseMeaningToArray } from "@/contexts/vocabUtils";
 
 const QuizCard: React.FC = () => {
   const {
@@ -39,6 +41,13 @@ const QuizCard: React.FC = () => {
   if (!currentCard) {
     return <QuizCardEmpty />;
   }
+
+  // Ensure meaning is always treated as an array
+  const meaningArray = Array.isArray(currentCard.meaning)
+    ? currentCard.meaning
+    : typeof currentCard.meaning === 'string'
+      ? parseMeaningToArray(currentCard.meaning as unknown as string)
+      : [];
 
   return (
     <Card className="w-full">
