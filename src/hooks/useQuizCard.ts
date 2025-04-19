@@ -1,3 +1,4 @@
+
 import { useRef, useState, useEffect } from "react";
 import { useVocab } from "@/contexts/VocabContext";
 import { VocabularyCard } from "@/types/vocab";
@@ -89,7 +90,7 @@ export function useQuizCard() {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const isCorrect = correctMeanings.includes(normalizedUserAnswer);
       
-      checkAnswer(isCorrect ? userAnswer : userAnswer);
+      checkAnswer(isCorrect);
     } else {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const correctWord = currentCard.word.toLowerCase();
@@ -102,7 +103,7 @@ export function useQuizCard() {
         normalizedUserAnswer === correctWord + "ing" ||
         normalizedUserAnswer.replace(/(?:ed|es|s|ing)$/, "") === correctWord;
       
-      checkAnswer(isCorrect ? currentCard.word : userAnswer);
+      checkAnswer(isCorrect);
     }
   };
 
