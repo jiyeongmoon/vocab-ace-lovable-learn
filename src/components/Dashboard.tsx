@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useVocab } from "@/contexts/VocabContext";
 import { Button } from "@/components/ui/button";
@@ -23,11 +22,12 @@ import {
   CheckCircle,
   Clock,
   BarChart3,
+  Book
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import CardForm from "./CardForm";
-import QuizCard from "./quiz/QuizCard"; // Updated import path
+import QuizCard from "./quiz/QuizCard";
 import WordList from "./WordList";
 import ExcelUpload from "./ExcelUpload";
 
@@ -35,17 +35,11 @@ const Dashboard: React.FC = () => {
   const { cards, incompleteCards, completedCards, quizMode, setQuizMode } = useVocab();
   const navigate = useNavigate();
   
-  // Calculate stats
   const totalWords = cards.length;
   const masteredWords = completedCards.length;
   const masteredPercentage = totalWords > 0 
     ? Math.round((masteredWords / totalWords) * 100) 
     : 0;
-
-  // Handle navigation to Quiz page
-  const handleQuizClick = () => {
-    navigate("/quiz");
-  };
 
   return (
     <div className="container py-6 max-w-5xl">
@@ -55,16 +49,25 @@ const Dashboard: React.FC = () => {
           <p className="text-muted-foreground">Master new vocabulary through spaced repetition</p>
         </div>
         
-        <Button
-          onClick={handleQuizClick}
-          className="flex items-center"
-        >
-          <BookOpen className="mr-2 h-4 w-4" />
-          Start Quiz Mode
-        </Button>
+        <div className="flex gap-3">
+          <Button
+            onClick={() => navigate("/study")}
+            variant="outline"
+            className="flex items-center"
+          >
+            <Book className="mr-2 h-4 w-4" />
+            Study Mode
+          </Button>
+          <Button
+            onClick={() => navigate("/quiz")}
+            className="flex items-center"
+          >
+            <BookOpen className="mr-2 h-4 w-4" />
+            Quiz Mode
+          </Button>
+        </div>
       </div>
       
-      {/* Stats Section */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Card>
           <CardContent className="p-6 flex items-center gap-4">
@@ -103,7 +106,6 @@ const Dashboard: React.FC = () => {
         </Card>
       </div>
       
-      {/* Management Mode */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2">
           <Tabs defaultValue="list">
