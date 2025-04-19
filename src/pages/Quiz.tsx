@@ -6,11 +6,13 @@ import { ArrowLeft } from "lucide-react";
 import QuizCard from "@/components/quiz/QuizCard";
 import { VocabProvider, useVocab } from "@/contexts/VocabContext";
 import QuizModeSelector from "@/components/quiz/QuizModeSelector";
+import { useQuizCard } from "@/hooks/useQuizCard";
 
 // Inner component that uses the VocabContext
 const QuizContent = () => {
   const navigate = useNavigate();
   const { setQuizMode } = useVocab();
+  const { quizDirection, setQuizDirection } = useQuizCard();
   
   useEffect(() => {
     setQuizMode(true);
@@ -34,11 +36,15 @@ const QuizContent = () => {
           <h1 className="text-2xl font-bold tracking-tight">Quiz Mode</h1>
         </div>
         
+        <div className="mb-6">
+          <QuizModeSelector 
+            quizDirection={quizDirection}
+            setQuizDirection={setQuizDirection}
+          />
+        </div>
+        
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
           <div className="xl:col-span-2">
-            <div className="mb-6">
-              <QuizModeSelector />
-            </div>
             <QuizCard />
           </div>
           <div>

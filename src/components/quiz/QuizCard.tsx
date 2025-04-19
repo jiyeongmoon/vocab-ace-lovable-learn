@@ -106,11 +106,9 @@ const QuizCard: React.FC = () => {
           onNext={handleNext}
         />
         
-        <QuizModeSelector
-          quizDirection={quizDirection}
+        <QuizModeSelector 
+          quizDirection={quizDirection} 
           setQuizDirection={setQuizDirection}
-          isStudyMode={isStudyMode}
-          setIsStudyMode={setIsStudyMode}
         />
         
         <QuizDebugPanel
