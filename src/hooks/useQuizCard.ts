@@ -1,4 +1,3 @@
-
 import { useRef, useState, useEffect } from "react";
 import { useVocab } from "@/contexts/VocabContext";
 import { VocabularyCard } from "@/types/vocab";
@@ -96,7 +95,7 @@ export function useQuizCard() {
         isCorrect
       });
       
-      checkAnswer(userAnswer);
+      checkAnswer(userAnswer, quizDirection);
     } else {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const correctWord = currentCard.word.toLowerCase();
@@ -129,8 +128,7 @@ export function useQuizCard() {
         correctWord 
       });
       
-      // Call the context's checkAnswer function
-      checkAnswer(userAnswer);
+      checkAnswer(userAnswer, quizDirection);
     }
   };
 

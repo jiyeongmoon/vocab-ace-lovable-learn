@@ -1,4 +1,3 @@
-
 import { VocabularyCard } from "@/types/vocab";
 
 export type QuizResult = "Correct" | "Incorrect" | null;
@@ -12,7 +11,7 @@ export interface VocabContextType {
   resetAllCards: () => void;
   currentCard: VocabularyCard | null;
   nextCard: () => void;
-  checkAnswer: (userAnswer: string) => QuizResult;
+  checkAnswer: (userAnswer: string, quizDirection?: "engToKor" | "korToEng") => QuizResult;
   quizResult: QuizResult;
   resetUserAnswer: () => void;
   generateExampleSentence: (word: string) => Promise<string>;

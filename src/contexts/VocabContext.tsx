@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { VocabularyCard } from "@/types/vocab";
 import { VocabContextType, QuizResult } from "./types";
@@ -216,24 +215,43 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setQuizResult(null);
   };
 
-  const checkAnswer = (userAnswer: string): QuizResult => {
+  const checkAnswer = (userAnswer: string, quizDirection: "engToKor" | "korToEng" = "engToKor"): QuizResult => {
     if (!currentCard) return null;
 
     const normalizedUserAnswer = userAnswer.trim().toLowerCase();
-    
-    const correctMeanings = Array.isArray(currentCard.meaning) 
-      ? currentCard.meaning.map(m => m.toLowerCase().trim()) 
-      : typeof currentCard.meaning === 'string'
-        ? parseMeaningToArray(currentCard.meaning as unknown as string).map(m => m.toLowerCase().trim())
-        : [];
+    let isCorrect = false;
 
-    const isCorrect = correctMeanings.includes(normalizedUserAnswer);
+    if (quizDirection === "engToKor") {
+      const correctMeanings = Array.isArray(currentCard.meaning) 
+        ? currentCard.meaning.map(m => m.toLowerCase().trim()) 
+        : typeof currentCard.meaning === 'string'
+          ? parseMeaningToArray(currentCard.meaning as unknown as string).map(m => m.toLowerCase().trim())
+          : [];
+
+      isCorrect = correctMeanings.includes(normalizedUserAnswer);
+    } else {
+      const correctWord = currentCard.word.toLowerCase();
+      
+      if (normalizedUserAnswer === correctWord) {
+        isCorrect = true;
+      } 
+      else if (
+        normalizedUserAnswer === correctWord + "s" ||
+        normalizedUserAnswer === correctWord + "es" ||
+        normalizedUserAnswer === correctWord + "ed" ||
+        normalizedUserAnswer === correctWord + "ing" ||
+        normalizedUserAnswer.replace(/(?:ed|es|s|ing)$/, "") === correctWord ||
+        normalizedUserAnswer.replace(/(?:ing|ed)$/, "").replace(/([^aeiou])$/, "") === correctWord.replace(/([^aeiou])$/, "")
+      ) {
+        isCorrect = true;
+      }
+    }
+
     const result: QuizResult = isCorrect ? "Correct" : "Incorrect";
 
     console.log("VocabContext - Setting quiz result to:", result, "for card:", currentCard.id);
 
     setQuizResult(result);
-
     updateCard(currentCard.id, { userAnswer });
 
     setSessionStats(prev => ({
@@ -249,13 +267,6 @@ export const VocabProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         correctCount: newCorrectCount,
         completed
       });
-
-      if (completed) {
-        showToast("Word Mastered! 🎉", `You've successfully mastered "${currentCard.word}".`);
-        
-        const newQueue = cardQueue.filter(card => card.id !== currentCard.id);
-        setCardQueue(newQueue);
-      }
     }
 
     return result;
