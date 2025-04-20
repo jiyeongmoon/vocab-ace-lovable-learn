@@ -89,18 +89,47 @@ export function useQuizCard() {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const isCorrect = correctMeanings.includes(normalizedUserAnswer);
       
+      console.log("Answer check (engToKor):", {
+        userAnswer: normalizedUserAnswer,
+        correctMeanings,
+        isCorrect
+      });
+      
       checkAnswer(userAnswer);
     } else {
       const normalizedUserAnswer = userAnswer.trim().toLowerCase();
       const correctWord = currentCard.word.toLowerCase();
       
-      const isCorrect = 
-        normalizedUserAnswer === correctWord || 
+      console.log("Answer check (korToEng):", {
+        userAnswer: normalizedUserAnswer,
+        correctWord,
+        card: currentCard
+      });
+      
+      let isCorrect = false;
+      
+      if (normalizedUserAnswer === correctWord) {
+        isCorrect = true;
+      } 
+      else if (
         normalizedUserAnswer === correctWord + "s" ||
         normalizedUserAnswer === correctWord + "es" ||
         normalizedUserAnswer === correctWord + "ed" ||
         normalizedUserAnswer === correctWord + "ing" ||
-        normalizedUserAnswer.replace(/(?:ed|es|s|ing)$/, "") === correctWord;
+        normalizedUserAnswer.replace(/(?:ed|es|s|ing)$/, "") === correctWord ||
+        normalizedUserAnswer.replace(/(?:ing|ed)$/, "").replace(/([^aeiou])$/, "") === correctWord.replace(/([^aeiou])$/, "")
+      ) {
+        isCorrect = true;
+      }
+      
+      console.log("Final comparison result:", { 
+        isCorrect,
+        normalizedUserAnswer, 
+        correctWord 
+      });
+      
+      const result = isCorrect ? "Correct" : "Incorrect";
+      setQuizResult(result);
       
       checkAnswer(userAnswer);
     }
