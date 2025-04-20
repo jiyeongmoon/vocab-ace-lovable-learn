@@ -1,3 +1,4 @@
+
 import { useRef, useState, useEffect } from "react";
 import { useVocab } from "@/contexts/VocabContext";
 import { VocabularyCard } from "@/types/vocab";
@@ -12,6 +13,7 @@ export function useQuizCard() {
     incompleteCards,
     checkAnswer,
     quizResult,
+    setQuizResult: contextSetQuizResult
   } = useVocab();
 
   const [userAnswer, setUserAnswer] = useState("");
@@ -128,9 +130,7 @@ export function useQuizCard() {
         correctWord 
       });
       
-      const result = isCorrect ? "Correct" : "Incorrect";
-      setQuizResult(result);
-      
+      // Call the context's checkAnswer function instead of trying to set quizResult directly
       checkAnswer(userAnswer);
     }
   };
@@ -184,3 +184,4 @@ export function useQuizCard() {
     setIsStudyMode
   };
 }
+

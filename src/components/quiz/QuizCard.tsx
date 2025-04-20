@@ -33,7 +33,9 @@ const QuizCard: React.FC = () => {
     handleRetry,
     formatExampleSentence,
     quizDirection,
-    setQuizDirection
+    setQuizDirection,
+    isStudyMode,
+    setIsStudyMode
   } = useQuizCard();
   
   const [isHovering, setIsHovering] = useState(false);
@@ -61,7 +63,7 @@ const QuizCard: React.FC = () => {
           formattedSentence={formatExampleSentence(currentCard.exampleSentence, currentCard.word)}
           incompleteCards={incompleteCards}
           quizDirection={quizDirection}
-          isStudyMode={false}
+          isStudyMode={isStudyMode}
         />
       </CardHeader>
       
@@ -101,7 +103,7 @@ const QuizCard: React.FC = () => {
           onSubmit={handleSubmit}
           showAnswer={showAnswer}
           inputRef={inputRef}
-          isStudyMode={false}
+          isStudyMode={isStudyMode}
           onNext={handleNext}
         />
         
@@ -112,7 +114,7 @@ const QuizCard: React.FC = () => {
           showAnswer={showAnswer}
         />
         
-        {showAnswer && quizResult && hasSubmittedAnswer && (
+        {showAnswer && quizResult && (
           <QuizFeedback
             currentCard={currentCard}
             quizResult={quizResult}
