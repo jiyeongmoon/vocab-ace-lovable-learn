@@ -13,7 +13,6 @@ export function useQuizCard() {
     incompleteCards,
     checkAnswer,
     quizResult,
-    setQuizResult: contextSetQuizResult
   } = useVocab();
 
   const [userAnswer, setUserAnswer] = useState("");
@@ -130,7 +129,7 @@ export function useQuizCard() {
         correctWord 
       });
       
-      // Call the context's checkAnswer function instead of trying to set quizResult directly
+      // Call the context's checkAnswer function
       checkAnswer(userAnswer);
     }
   };
@@ -184,4 +183,3 @@ export function useQuizCard() {
     setIsStudyMode
   };
 }
-
